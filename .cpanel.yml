@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/mikrodat/public_html/
+    - /bin/cp -R site/. $DEPLOYPATH
