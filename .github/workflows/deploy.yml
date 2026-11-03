@@ -9,10 +9,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          server: 45.74.189.99
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
+          security: loose
           port: 21
           local-dir: ./site/
           server-dir: ./
