@@ -1,0 +1,18 @@
+:root{--bg:#f2f4f5;--ink:#14181c;--mut:#5b6670;--acc:#0b7a75;--line:#d5dbe0;--warn:#b4380f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--acc)}.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.top{background:repeating-linear-gradient(180deg,var(--ink) 0 6px,#1f262c 6px 12px);color:#fff;padding:44px 0 36px}
+.top h1{margin:0;font-size:clamp(2rem,6vw,3.4rem);letter-spacing:-.02em;line-height:1.05}.top p{margin:10px 0 0;max-width:46ch;color:#cfd8de}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px;padding:26px 0}
+.card{background:#fff;border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.card img{width:100%;aspect-ratio:1;object-fit:cover;background:#e3e8eb}.card div{padding:14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card h3{margin:0;font-size:1.05rem}.card small{color:var(--mut)}.price{font-weight:700;font-size:1.15rem}
+.btn,button{background:var(--acc);color:#fff;border:0;border-radius:4px;padding:9px 14px;font:inherit;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.alt,button.alt{background:#fff;color:var(--ink);border:1px solid var(--line)}button.del{background:var(--warn)}
+.btn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #7cc4bf;outline-offset:2px}
+.cats a{display:inline-block;margin:18px 8px 0 0;padding:5px 12px;border:1px solid var(--line);border-radius:99px;text-decoration:none;color:var(--ink);background:#fff}
+.cats a.on{background:var(--ink);color:#fff}.empty{padding:40px 0;color:var(--mut)}footer{padding:26px 0;color:var(--mut)}
+table{width:100%;border-collapse:collapse;background:#fff}td,th{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+form.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;background:#fff;padding:14px;border:1px solid var(--line);border-radius:6px;margin:12px 0}
+input,select,textarea{font:inherit;padding:8px;border:1px solid var(--line);border-radius:4px;width:100%}
+.low{color:var(--warn);font-weight:700}.tabs a{margin-right:14px}.msg{background:#e2f3f1;padding:8px 12px;border-radius:4px}.x{overflow-x:auto}
