@@ -174,3 +174,14 @@ footer .copy{margin-top:48px;font-size:.9rem;opacity:.85}
   .print .txt,.print .nozzle{animation:none}.print .nozzle{display:none}
   .btn{transition:none}.btn:hover{transform:none}
 }
+
+/* Çerez bildirimi */
+.consent{position:fixed;left:16px;right:16px;bottom:16px;max-width:760px;margin:0 auto;z-index:50;background:var(--ink);color:#fff;border-radius:var(--r);padding:18px 20px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;box-shadow:0 8px 30px rgba(42,31,92,.35)}
+.consent[hidden]{display:none}
+.consent p{flex:1 1 320px;font-size:.92rem;line-height:1.5}
+.consent .acts{flex-wrap:nowrap}
+.consent .btn{background:#fff;color:var(--ink);border-color:#fff;cursor:pointer;font-family:inherit}
+.consent .btn.ghost{background:transparent;color:#fff}
+.consent a:focus-visible,.consent .btn:focus-visible{outline-color:var(--sun)}
+.linkbtn{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.linkbtn:focus-visible{outline:3px solid #fff;outline-offset:3px}

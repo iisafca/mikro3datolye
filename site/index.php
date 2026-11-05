@@ -19,13 +19,17 @@ $areas = [
   ['Özel tasarım','Fotoğraf, ölçü ya da sadece bir fikir paylaşın. Uygun projelerde mevcut modelleri uyarlıyor, basit tasarımlar hazırlıyoruz.','--c:var(--cyan)'],
 ];
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-DM8M8T5C9S"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-DM8M8T5C9S');
+/* Analiz çerezleri yalnızca ziyaretçi kabul ederse yüklenir. */
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+function loadAnalytics(){
+  if (window.__gaLoaded) return; window.__gaLoaded = true;
+  var s = document.createElement('script'); s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=G-DM8M8T5C9S';
+  document.head.appendChild(s);
+  gtag('js', new Date()); gtag('config', 'G-DM8M8T5C9S');
+}
 </script>
 <title>Mikro 3D Atölye | Kişiye özel 3D baskı hediyelik ve ev dekorasyonu</title>
 <meta name="description" content="Kişiye özel hediyelikler, özgün ev dekorasyonu ve günlük hayatı kolaylaştıran tasarımlar üreten butik 3D baskı atölyesi. Fikrinizi birlikte ürüne dönüştürelim.">
@@ -126,6 +130,24 @@ $areas = [
     <li><a href="<?= $dolap ?>" rel="noopener">Dolap</a></li>
     <li><a href="mailto:<?= $mail ?>"><?= $mail ?></a></li>
   </ul>
-  <p class="copy">© <?= date('Y') ?> Mikro 3D Atölye</p>
+  <p class="copy">© <?= date('Y') ?> Mikro 3D Atölye · <button type="button" class="linkbtn" id="consent-open">Çerez tercihi</button></p>
 </div></footer>
+
+<div class="consent" id="consent" role="region" aria-label="Çerez tercihi" hidden>
+  <p>Bu site, ziyaretlerin nasıl kullanıldığını anlamak için Google Analytics çerezleri kullanır. Siz kabul etmeden analiz çerezleri çalışmaz. Tercihinizi sayfanın altındaki "Çerez tercihi" bağlantısından değiştirebilirsiniz.</p>
+  <div class="acts"><button type="button" class="btn sm" id="consent-yes">Kabul et</button><button type="button" class="btn sm ghost" id="consent-no">Reddet</button></div>
+</div>
+<script>
+(function(){
+  var KEY='m3d_cerez', box=document.getElementById('consent');
+  function get(){ try{ return localStorage.getItem(KEY); }catch(e){ return null; } }
+  function set(v){ try{ localStorage.setItem(KEY,v); }catch(e){} }
+  function apply(v){ if(v==='evet') loadAnalytics(); box.hidden = (v==='evet'||v==='hayir'); }
+  document.getElementById('consent-yes').onclick=function(){ set('evet'); apply('evet'); };
+  document.getElementById('consent-no').onclick=function(){ set('hayir'); apply('hayir'); };
+  var re=document.getElementById('consent-open');
+  if(re) re.onclick=function(){ box.hidden=false; box.querySelector('button').focus(); };
+  apply(get());
+})();
+</script>
 </body></html>
