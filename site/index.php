@@ -19,6 +19,14 @@ $areas = [
   ['Özel tasarım','Fotoğraf, ölçü ya da sadece bir fikir paylaşın. Uygun projelerde mevcut modelleri uyarlıyor, basit tasarımlar hazırlıyoruz.','--c:var(--cyan)'],
 ];
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DM8M8T5C9S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-DM8M8T5C9S');
+</script>
 <title>Mikro 3D Atölye | Kişiye özel 3D baskı hediyelik ve ev dekorasyonu</title>
 <meta name="description" content="Kişiye özel hediyelikler, özgün ev dekorasyonu ve günlük hayatı kolaylaştıran tasarımlar üreten butik 3D baskı atölyesi. Fikrinizi birlikte ürüne dönüştürelim.">
 <meta name="theme-color" content="#2a1f5c">
