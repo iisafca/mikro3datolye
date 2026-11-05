@@ -185,3 +185,16 @@ footer .copy{margin-top:48px;font-size:.9rem;opacity:.85}
 .consent a:focus-visible,.consent .btn:focus-visible{outline-color:var(--sun)}
 .linkbtn{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .linkbtn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+/* Instagram galerisi */
+.insta{padding:80px 0;background:var(--paper)}
+.insta-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.insta h2{font-size:clamp(1.8rem,4vw,2.8rem)}
+.insta .lead{color:var(--mut);margin:10px 0 26px}
+.insta-gate{background:var(--ice);border-radius:var(--r);padding:28px;display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.insta-gate[hidden],.insta-grid[hidden]{display:none}
+.insta-gate p{flex:1 1 320px;color:var(--mut);max-width:60ch}
+.insta-gate .btn{cursor:pointer;font-family:inherit}
+.insta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,326px),1fr));gap:20px;align-items:start}
+.insta-grid .instagram-media{margin:0 auto!important;min-width:0!important;max-width:540px!important;width:100%!important}
+@media(max-width:860px){.insta{padding:56px 0}}

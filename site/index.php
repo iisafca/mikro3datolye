@@ -112,6 +112,23 @@ function loadAnalytics(){
   </article><?php endforeach; ?></div>
 </div></section>
 
+<section class="insta" id="instagram"><div class="wrap">
+  <div class="insta-head"><h2>Atölyeden</h2><a class="btn sm ghost" href="<?= $ig ?>" rel="noopener">Instagram'da takip edin</a></div>
+  <p class="lead">Son çalışmalarımızı Instagram'da paylaşıyoruz.</p>
+  <div class="insta-gate" id="insta-gate">
+    <p>Paylaşımları göstermek için Instagram'ın kendi kodu yüklenir ve Instagram çerez kullanabilir. Düğmeye basana kadar hiçbir şey yüklenmez.</p>
+    <button type="button" class="btn sm" id="insta-show">Paylaşımları göster</button>
+  </div>
+  <div class="insta-grid" id="insta-grid" hidden>
+    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DfUW1MQEdQu/" data-instgrm-version="14"><a href="https://www.instagram.com/p/DfUW1MQEdQu/" rel="noopener">Paylaşımı Instagram'da gör</a></blockquote>
+    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DfNewD3EVX3/" data-instgrm-version="14"><a href="https://www.instagram.com/p/DfNewD3EVX3/" rel="noopener">Paylaşımı Instagram'da gör</a></blockquote>
+    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DfCdVeEDcUP/" data-instgrm-version="14"><a href="https://www.instagram.com/p/DfCdVeEDcUP/" rel="noopener">Paylaşımı Instagram'da gör</a></blockquote>
+    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/De7Tb1gEcvv/" data-instgrm-version="14"><a href="https://www.instagram.com/p/De7Tb1gEcvv/" rel="noopener">Paylaşımı Instagram'da gör</a></blockquote>
+    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DepeuPOEb8x/" data-instgrm-version="14"><a href="https://www.instagram.com/p/DepeuPOEb8x/" rel="noopener">Paylaşımı Instagram'da gör</a></blockquote>
+    <blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/DehiU-LERYV/" data-instgrm-version="14"><a href="https://www.instagram.com/p/DehiU-LERYV/" rel="noopener">Paylaşımı Instagram'da gör</a></blockquote>
+  </div>
+</div></section>
+
 <section class="about" id="atolye"><div class="wrap">
   <h2>Küçük bir atölye, kişisel bir üretim</h2>
   <div class="about-cols">
@@ -148,6 +165,22 @@ function loadAnalytics(){
   var re=document.getElementById('consent-open');
   if(re) re.onclick=function(){ box.hidden=false; box.querySelector('button').focus(); };
   apply(get());
+})();
+</script>
+<script>
+(function(){
+  var KEY='m3d_ig', gate=document.getElementById('insta-gate'), grid=document.getElementById('insta-grid');
+  function get(){ try{ return localStorage.getItem(KEY); }catch(e){ return null; } }
+  function set(v){ try{ localStorage.setItem(KEY,v); }catch(e){} }
+  function show(){
+    gate.hidden=true; grid.hidden=false;
+    if(window.instgrm){ window.instgrm.Embeds.process(); return; }
+    var s=document.createElement('script'); s.async=true; s.src='https://www.instagram.com/embed.js';
+    s.onload=function(){ if(window.instgrm) window.instgrm.Embeds.process(); };
+    document.body.appendChild(s);
+  }
+  document.getElementById('insta-show').onclick=function(){ set('evet'); show(); };
+  if(get()==='evet') show();
 })();
 </script>
 </body></html>
