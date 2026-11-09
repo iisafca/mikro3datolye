@@ -34,9 +34,8 @@ function loadAnalytics(){
 <title>Mikro 3D Atölye | Kişiye özel 3D baskı hediyelik ve ev dekorasyonu</title>
 <meta name="description" content="Kişiye özel hediyelikler, özgün ev dekorasyonu ve günlük hayatı kolaylaştıran tasarımlar üreten butik 3D baskı atölyesi. Fikrinizi birlikte ürüne dönüştürelim.">
 <meta name="theme-color" content="#2a1f5c">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=3"></head><body>
+<link rel="preload" href="unbounded-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="site.css?v=4"></head><body>
 
 <header class="top"><div class="wrap">
   <a class="logo" href="./" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>mikro3d atölye</a>
