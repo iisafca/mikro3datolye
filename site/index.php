@@ -147,11 +147,11 @@ function loadAnalytics(){
     <li><a href="<?= $dolap ?>" rel="noopener">Dolap</a></li>
     <li><a href="mailto:<?= $mail ?>"><?= $mail ?></a></li>
   </ul>
-  <p class="copy">© <?= date('Y') ?> Mikro 3D Atölye · <button type="button" class="linkbtn" id="consent-open">Çerez tercihi</button></p>
+  <p class="copy">© <?= date('Y') ?> Mikro 3D Atölye · <button type="button" class="linkbtn" id="consent-open">Çerez tercihi</button> · <a href="gizlilik.php">Gizlilik ve çerezler</a></p>
 </div></footer>
 
 <div class="consent" id="consent" role="region" aria-label="Çerez tercihi" hidden>
-  <p>Bu site, ziyaretlerin nasıl kullanıldığını anlamak için Google Analytics çerezleri kullanır. Siz kabul etmeden analiz çerezleri çalışmaz. Tercihinizi sayfanın altındaki "Çerez tercihi" bağlantısından değiştirebilirsiniz.</p>
+  <p>Bu site, ziyaretlerin nasıl kullanıldığını anlamak için Google Analytics çerezleri kullanır. Siz kabul etmeden analiz çerezleri çalışmaz. Tercihinizi sayfanın altındaki "Çerez tercihi" bağlantısından değiştirebilirsiniz. <a href="gizlilik.php">Ayrıntılı bilgi</a></p>
   <div class="acts"><button type="button" class="btn sm" id="consent-yes">Kabul et</button><button type="button" class="btn sm ghost" id="consent-no">Reddet</button></div>
 </div>
 <script>
