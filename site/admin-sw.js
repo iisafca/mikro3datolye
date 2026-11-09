@@ -14,7 +14,7 @@ self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) { e.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', function (e) {
   var r = e.request;
-  if (r.mode !== 'navigate' || r.method !== 'GET' || r.url.indexOf('csv=') > -1) return;
+  if (r.mode !== 'navigate' || r.method !== 'GET' || /[?&](csv|yedek)=/.test(r.url)) return;  // dosya indirmeleri doğrudan geçer
   e.respondWith(fetch(r).catch(function () {
     return new Response(OFFLINE, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   }));
