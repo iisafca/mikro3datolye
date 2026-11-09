@@ -1,0 +1,23 @@
+{
+  "id": "/admin.php",
+  "name": "Mikro 3D Atölye paneli",
+  "short_name": "Atölye",
+  "description": "Filament stoğu, baskılar ve satışlar",
+  "lang": "tr",
+  "start_url": "/admin.php",
+  "scope": "/admin.php",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f2f4f5",
+  "theme_color": "#0b7a75",
+  "icons": [
+    { "src": "/app-icon.php?s=192", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon.php?s=512", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon.php?s=512", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Yeni baskı", "url": "/admin.php?t=b" },
+    { "name": "Yeni satış", "url": "/admin.php?t=s" },
+    { "name": "Stok", "url": "/admin.php?t=m" }
+  ]
+}
