@@ -16,3 +16,54 @@ table{width:100%;border-collapse:collapse;background:#fff}td,th{padding:9px;bord
 form.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;background:#fff;padding:14px;border:1px solid var(--line);border-radius:6px;margin:12px 0}
 input,select,textarea{font:inherit;padding:8px;border:1px solid var(--line);border-radius:4px;width:100%}
 .low{color:var(--warn);font-weight:700}.tabs a{margin-right:14px}.msg{background:#e2f3f1;padding:8px 12px;border-radius:4px}.x{overflow-x:auto}
+
+
+/* ===== Atölye paneli: stok, baskılar, satışlar ===== */
+h1{margin:0 0 10px}
+.tabs{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:0 0 6px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.tabs a{margin:0;text-decoration:none;font-weight:500;padding:4px 0;border-bottom:3px solid transparent}
+.tabs a.on{color:var(--ink);font-weight:700;border-bottom-color:var(--acc)}
+.tabs .sp{flex:1}
+.msg{margin:12px 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.cards>div{background:#fff;border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.cards small{color:var(--mut);font-size:.82rem}.cards b{display:block;font-size:1.3rem;line-height:1.25}.cards b small{display:inline}
+.pos{color:var(--acc)}.neg{color:var(--warn)}
+.sw{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--c);border:1px solid rgba(0,0,0,.25);vertical-align:-2px;margin-right:7px;flex:none}
+.bar{display:block;height:6px;max-width:140px;margin:5px 0 3px;background:#e3e8eb;border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc)}.low .bar i{background:var(--warn)}
+td small{color:var(--mut);font-weight:400}.nowrap{white-space:nowrap}
+.empty{color:var(--mut);text-align:center;padding:26px 9px}
+details.add{background:#fff;border:1px solid var(--line);border-radius:6px;margin:12px 0}
+details.add>summary{cursor:pointer;padding:12px 14px;font-weight:700}
+details.add>form.row{margin:0;border:0;border-top:1px solid var(--line);border-radius:0 0 6px 6px}
+details.ed>summary{cursor:pointer;color:var(--acc);list-style:none;white-space:nowrap}
+details.ed>summary::-webkit-details-marker{display:none}
+details.ed>form.row{min-width:300px;margin:8px 0;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+td.act{white-space:nowrap}td.act form{margin:0}
+.lbl{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--mut)}
+.lbl input,.lbl select,.lbl textarea{color:var(--ink);font-size:1rem}
+.full{grid-column:1/-1}
+.full2{grid-column:span 2}
+.mrow{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 120px 28px;gap:10px;align-items:end}
+.mrow .u{padding-bottom:10px;color:var(--mut);font-size:.9rem}
+.calc{grid-column:1/-1;background:var(--bg);border-radius:4px;padding:10px 12px;font-size:.95rem}
+.ck{display:flex;align-items:center;gap:8px}.ck input{width:auto}
+.hint{color:var(--mut);font-size:.88rem;margin:0}
+.badge{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:99px;background:#fde3d9;color:var(--warn);font-size:.78rem;font-weight:700}
+.badge.t{background:#e3e8eb;color:var(--mut)}
+form.inl{display:flex;gap:6px}form.inl input{min-width:110px}
+button.lnk{background:none;border:0;padding:4px 0;color:var(--acc);text-decoration:underline;text-underline-offset:3px}
+button.lnk.neg{color:var(--warn)}
+.per{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:14px 0}
+.per label{display:flex;align-items:center;gap:8px}.per input{width:auto}
+.chs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
+.chs span{background:#fff;border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:.9rem}
+.chs small{color:var(--mut)}
+@media(max-width:640px){
+  .wrap{padding-left:12px!important;padding-right:12px!important}
+  .full2{grid-column:1/-1}
+  .mrow{grid-template-columns:minmax(0,1fr) 90px 22px}
+  .cards b{font-size:1.1rem}
+  td,th{padding:7px}
+}
