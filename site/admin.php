@@ -12,11 +12,23 @@ const AYLAR=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağu
 $t=$_GET['t']??'m'; if(!in_array($t,['m','b','s','p'],true)) $t='m';
 $ay=$_GET['ay']??date('Y-m'); if($ay!=='hepsi' && !preg_match('/^\d{4}-(0[1-9]|1[0-2])$/',$ay)) $ay=date('Y-m');
 
+/* "Bu cihazda açık kalsın": imzalı çerez. Şifre değişirse tüm cihazlardaki çerezler geçersiz olur. */
+const KEEP_DAYS=60;
+function keepTok($exp){ global $env; return $exp.'.'.hash_hmac('sha256','m3d-admin|'.$exp,(string)$env['ADMIN_PASS']); }
+function keepSet($exp){ setcookie('m3d_keep',$exp?keepTok($exp):'',['expires'=>$exp?:1,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']); }
+if(empty($_SESSION['ok']) && !empty($env['ADMIN_PASS']) && !empty($_COOKIE['m3d_keep'])){
+  $kc=(string)$_COOKIE['m3d_keep']; $ke=explode('.',$kc,2)[0];
+  if(ctype_digit($ke) && (int)$ke>time() && hash_equals(keepTok((int)$ke),$kc)){ session_regenerate_id(true); $_SESSION['ok']=1; }
+  else keepSet(0);
+}
+
 if(isset($_POST['login'])){
-  if(!empty($env['ADMIN_PASS']) && hash_equals($env['ADMIN_PASS'],(string)$_POST['pass'])){ session_regenerate_id(true); $_SESSION['ok']=1; header('Location: admin.php'); exit; }
+  if(!empty($env['ADMIN_PASS']) && hash_equals($env['ADMIN_PASS'],(string)$_POST['pass'])){
+    session_regenerate_id(true); $_SESSION['ok']=1; if(!empty($_POST['keep'])) keepSet(time()+KEEP_DAYS*86400);
+    header('Location: admin.php'); exit; }
   $msg='Şifre hatalı.'; usleep(600000);
 }
-if(isset($_GET['out'])){ session_destroy(); header('Location: admin.php'); exit; }
+if(isset($_GET['out'])){ keepSet(0); session_destroy(); header('Location: admin.php'); exit; }
 
 /* ---------- Yardımcılar ---------- */
 // "1.250,50" ya da "1250.5" gibi girişleri sayıya çevirir.
@@ -170,9 +182,14 @@ if($ok){
 $today=date('Y-m-d');
 $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Atölye paneli</title><link rel="stylesheet" href="style.css?v=2"></head><body><main class="wrap" style="padding:20px 20px 60px">
+<title>Atölye paneli</title><link rel="stylesheet" href="style.css?v=3">
+<link rel="manifest" href="admin-manifest.json"><meta name="theme-color" content="#0b7a75">
+<link rel="icon" type="image/png" href="app-icon.php?s=192"><link rel="apple-touch-icon" href="app-icon.php?s=180">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Atölye">
+</head><body><main class="wrap" style="padding:20px 20px 60px">
 <?php if(!$ok): ?><h1>Yönetim girişi</h1><?php if($msg)echo '<p class="msg">'.h($msg).'</p>'; ?>
-<form method="post" class="row" style="max-width:360px"><input type="password" name="pass" placeholder="Şifre" required autofocus><button name="login" value="1">Giriş yap</button></form>
+<form method="post" class="row" style="max-width:360px;grid-template-columns:1fr"><input type="password" name="pass" placeholder="Şifre" required autofocus autocomplete="current-password">
+<label class="ck"><input type="checkbox" name="keep" value="1" checked> Bu cihazda açık kalsın (<?=KEEP_DAYS?> gün)</label><button name="login" value="1">Giriş yap</button></form>
 <?php else: ?>
 <h1>Atölye paneli</h1>
 <nav class="tabs"><a href="?t=m"<?=$t==='m'?' class="on"':''?>>Stok</a><a href="?t=b"<?=$t==='b'?' class="on"':''?>>Baskılar</a><a href="?t=s"<?=$t==='s'?' class="on"':''?>>Satışlar</a><a href="?t=p"<?=$t==='p'?' class="on"':''?>>Ürünler</a><span class="sp"></span><a href="./">Siteyi gör</a><a href="?out=1">Çıkış yap</a></nav>
@@ -307,6 +324,14 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 (function(){
   function n(v){ v=String(v||'').trim(); if(v.indexOf(',')>-1) v=v.replace(/[.\s]/g,'').replace(',','.'); return parseFloat(v)||0; }
   function tl(x){ return x.toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₺'; }
+  // Telefona kurulabilen uygulama: internet yokken uyarı sayfası gösterir
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('admin-sw.js',{scope:'admin.php'}).catch(function(){});
+  // Telefonda tablolar kart olarak görünür; her hücreye sütun başlığını etiket olarak ekler
+  document.querySelectorAll('.x table').forEach(function(tb){
+    var hr=tb.querySelector('tr'); if(!hr||!hr.querySelector('th')) return; hr.classList.add('h');
+    var hs=[].map.call(hr.children,function(c){ return c.textContent.trim(); });
+    [].forEach.call(tb.rows,function(r){ if(r===hr) return; [].forEach.call(r.cells,function(td,i){ if(!td.colSpan||td.colSpan<2){ if(hs[i]) td.setAttribute('data-l',hs[i]); } }); });
+  });
   // Baskı formu: maliyeti anında hesaplar
   var f=document.getElementById('bform');
   if(f){
