@@ -17,7 +17,6 @@ form.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));g
 input,select,textarea{font:inherit;padding:8px;border:1px solid var(--line);border-radius:4px;width:100%}
 .low{color:var(--warn);font-weight:700}.tabs a{margin-right:14px}.msg{background:#e2f3f1;padding:8px 12px;border-radius:4px}.x{overflow-x:auto}
 
-
 /* ===== Atölye paneli: stok, baskılar, satışlar ===== */
 h1{margin:0 0 10px}
 .tabs{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin:0 0 6px;padding-bottom:10px;border-bottom:1px solid var(--line)}
@@ -66,4 +65,29 @@ button.lnk.neg{color:var(--warn)}
   .mrow{grid-template-columns:minmax(0,1fr) 90px 22px}
   .cards b{font-size:1.1rem}
   td,th{padding:7px}
+}
+
+/* ===== Telefon / uygulama görünümü ===== */
+@media(max-width:640px){
+  /* Sekmeler kaydırırken üstte sabit kalır */
+  .tabs{position:sticky;top:0;z-index:5;background:var(--bg);padding-top:10px;margin-top:-10px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs a{padding:8px 0;white-space:nowrap}
+  .tabs .sp{flex:0 0 6px}
+  /* Tablolar kart olarak: her satır bir kart, hücre başında sütun adı */
+  .x{overflow:visible}
+  .x table,.x tbody,.x tr,.x td{display:block;width:100%}
+  .x table{background:none}
+  .x tr.h{display:none}
+  .x tr{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:0 0 10px}
+  .x td{border:0;padding:5px 0}
+  .x td[data-l]{position:relative;padding-left:36%;min-height:1.9em}
+  .x td[data-l]::before{content:attr(data-l);position:absolute;left:0;top:7px;width:33%;color:var(--mut);font-size:.8rem;font-weight:400;line-height:1.3}
+  .x td.nowrap{white-space:normal}
+  .x td.act{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 20px;border-top:1px solid var(--line);margin-top:6px;padding-top:8px}
+  .x td.act details.ed[open]{flex-basis:100%}
+  details.ed>form.row{min-width:0}
+  form.inl input{min-width:0;flex:1}
+  .bar{max-width:none}
+  .x td.empty{padding:18px 0}
 }
