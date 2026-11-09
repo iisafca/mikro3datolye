@@ -91,6 +91,32 @@ if($ok && ($_GET['csv']??'')==='satis'){
   exit;
 }
 
+/* ---------- Veritabanı yedeği: tüm tablolar tek .sql dosyası olarak iner ---------- */
+if($ok && isset($_GET['yedek'])){
+  $db->prepare("REPLACE INTO settings(k,v) VALUES('last_backup',?)")->execute([date('Y-m-d H:i:s')]);
+  $tabs=$db->query("SHOW FULL TABLES WHERE Table_type='BASE TABLE'")->fetchAll(PDO::FETCH_COLUMN,0);
+  @set_time_limit(120);
+  header('Content-Type: application/sql; charset=utf-8'); header('Cache-Control: no-store');
+  header('Content-Disposition: attachment; filename="mikro3d-yedek-'.date('Y-m-d-Hi').'.sql"');
+  echo "-- Mikro 3D Atölye veritabanı yedeği · ".date('d.m.Y H:i')."\n";
+  echo "-- Geri yüklemek için: cPanel > phpMyAdmin > soldan veritabanını seçin > İçe aktar (Import) > bu dosyayı seçin > Git.\n";
+  echo "-- DİKKAT: Geri yükleme, aşağıdaki tabloları silip bu dosyadaki haliyle yeniden oluşturur.\n\n";
+  echo "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n";
+  foreach($tabs as $tb){
+    $q='`'.str_replace('`','``',$tb).'`';
+    $cr=$db->query("SHOW CREATE TABLE $q")->fetch(PDO::FETCH_NUM)[1];
+    echo "DROP TABLE IF EXISTS $q;\n$cr;\n";
+    $n=0;
+    foreach($db->query("SELECT * FROM $q",PDO::FETCH_ASSOC) as $r){
+      if(!$n) $cols='(`'.implode('`,`',array_map(fn($k)=>str_replace('`','``',$k),array_keys($r))).'`)';
+      echo "INSERT INTO $q $cols VALUES (".implode(',',array_map(fn($v)=>$v===null?'NULL':$db->quote((string)$v),$r)).");\n"; $n++;
+    }
+    echo "-- $tb: $n kayıt\n\n";
+  }
+  echo "SET FOREIGN_KEY_CHECKS=1;\n";
+  exit;
+}
+
 /* ---------- Form işlemleri ---------- */
 if($ok && $_SERVER['REQUEST_METHOD']==='POST' && !isset($_POST['login'])){
   if(!hash_equals($_SESSION['csrf'],(string)($_POST['csrf']??''))) exit('Geçersiz istek.');
@@ -192,8 +218,10 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 <label class="ck"><input type="checkbox" name="keep" value="1" checked> Bu cihazda açık kalsın (<?=KEEP_DAYS?> gün)</label><button name="login" value="1">Giriş yap</button></form>
 <?php else: ?>
 <h1>Atölye paneli</h1>
-<nav class="tabs"><a href="?t=m"<?=$t==='m'?' class="on"':''?>>Stok</a><a href="?t=b"<?=$t==='b'?' class="on"':''?>>Baskılar</a><a href="?t=s"<?=$t==='s'?' class="on"':''?>>Satışlar</a><a href="?t=p"<?=$t==='p'?' class="on"':''?>>Ürünler</a><span class="sp"></span><a href="./">Siteyi gör</a><a href="?out=1">Çıkış yap</a></nav>
-<?php if($msg)echo '<p class="msg">'.h($msg).'</p>'; ?>
+<nav class="tabs"><a href="?t=m"<?=$t==='m'?' class="on"':''?>>Stok</a><a href="?t=b"<?=$t==='b'?' class="on"':''?>>Baskılar</a><a href="?t=s"<?=$t==='s'?' class="on"':''?>>Satışlar</a><a href="?t=p"<?=$t==='p'?' class="on"':''?>>Ürünler</a><span class="sp"></span><a href="?yedek=1" class="yb-link">Yedek indir</a><a href="./">Siteyi gör</a><a href="?out=1">Çıkış yap</a></nav>
+<?php if($msg)echo '<p class="msg">'.h($msg).'</p>';
+  $lb=$S['last_backup']??''; $lbd=$lb?(int)floor((time()-strtotime($lb))/86400):null;
+  if($lbd===null||$lbd>=30): ?><p class="msg" id="yb" style="background:#fde3d9"><?=$lbd===null?'Henüz hiç yedek almadınız.':'Son yedek '.$lbd.' gün önce alındı.'?> Kayıtlarınızı korumak için ayda bir yedek indirin. <a href="?yedek=1" class="yb-link"><b>Şimdi indir</b></a></p><?php endif; ?>
 
 <?php if($t==='b'||$t==='s'): ?>
 <form method="get" class="per"><input type="hidden" name="t" value="<?=$t?>"><label>Dönem <input type="month" name="ay" value="<?=$ay==='hepsi'?'':h($ay)?>"></label><button class="alt">Göster</button><a href="?t=<?=$t?>&amp;ay=hepsi">Tüm zamanlar</a><a href="?t=<?=$t?>">Bu ay</a></form>
@@ -326,6 +354,8 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
   function tl(x){ return x.toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₺'; }
   // Telefona kurulabilen uygulama: internet yokken uyarı sayfası gösterir
   if('serviceWorker' in navigator) navigator.serviceWorker.register('admin-sw.js',{scope:'admin.php'}).catch(function(){});
+  // Yedek indirilince hatırlatma kutusunu kaldırır
+  document.querySelectorAll('.yb-link').forEach(function(a){ a.addEventListener('click',function(){ var b=document.getElementById('yb'); if(b) setTimeout(function(){ b.remove(); },800); }); });
   // Telefonda tablolar kart olarak görünür; her hücreye sütun başlığını etiket olarak ekler
   document.querySelectorAll('.x table').forEach(function(tb){
     var hr=tb.querySelector('tr'); if(!hr||!hr.querySelector('th')) return; hr.classList.add('h');
