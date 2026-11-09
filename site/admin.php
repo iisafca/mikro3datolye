@@ -1,4 +1,4 @@
-<?php require 'config.php';
+<?php require 'config.php'; require 'urun-ortak.php';
 /* Mikro 3D Atölye yönetim paneli: stok, baskılar, satışlar, ürünler. */
 date_default_timezone_set('Europe/Istanbul');
 header('X-Robots-Tag: noindex');
@@ -6,7 +6,8 @@ if(empty($_SESSION['csrf'])) $_SESSION['csrf']=bin2hex(random_bytes(16));
 $msg=$_SESSION['flash']??''; unset($_SESSION['flash']);
 
 const STATUS=['ok'=>'Başarılı','fire'=>'Hatalı / fire','test'=>'Deneme'];
-const CHANNELS=['Shopier','Dolap','Instagram','WhatsApp','Elden','Diğer'];
+const CHANNELS=['Tanıdık','Shopier','Dolap','Instagram','WhatsApp','Elden','Diğer'];
+const SSTAT=['hazirlaniyor'=>'Hazırlanıyor','kargoda'=>'Kargoda','teslim'=>'Teslim edildi'];
 const AYLAR=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
 $t=$_GET['t']??'m'; if(!in_array($t,['m','b','s','p'],true)) $t='m';
@@ -72,7 +73,13 @@ function migrate($db){
   $cols=$db->query("SHOW COLUMNS FROM materials")->fetchAll(PDO::FETCH_COLUMN);
   foreach(['pack_price'=>"DECIMAL(10,2) NOT NULL DEFAULT 0",'pack_size'=>"DECIMAL(12,2) NOT NULL DEFAULT 1000",'hex'=>"VARCHAR(7) NULL"] as $c=>$def)
     if(!in_array($c,$cols,true)) $db->exec("ALTER TABLE materials ADD COLUMN $c $def");
+  // Satışlara sipariş durumu. Notunda "Hazırlanıyor" yazan eski kayıtlar bu alana taşınır.
+  if(!in_array('status',$db->query("SHOW COLUMNS FROM sales")->fetchAll(PDO::FETCH_COLUMN),true)){
+    $db->exec("ALTER TABLE sales ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'teslim'");
+    $db->exec("UPDATE sales SET status='hazirlaniyor', notes=TRIM(REPLACE(REPLACE(notes,' · Hazırlanıyor',''),'Hazırlanıyor','')) WHERE notes LIKE '%Hazırlanıyor%'");
+  }
 }
+function sstat($v){ return array_key_exists($v,SSTAT) ? $v : 'teslim'; }
 
 $ok=!empty($_SESSION['ok']); $S=[];
 if($ok){ migrate($db); $S=$db->query("SELECT k,v FROM settings")->fetchAll(PDO::FETCH_KEY_PAIR); }
@@ -85,9 +92,9 @@ if($ok && ($_GET['csv']??'')==='satis'){
   $o=fopen('php://output','w'); fwrite($o,"\xEF\xBB\xBF");
   $c=fn($s)=>preg_match('/^[=+\-@\t\r]/',(string)$s) ? "'".$s : (string)$s;   // Excel formül enjeksiyonunu önler
   $n=fn($x)=>number_format((float)$x,2,',','');
-  fputcsv($o,['Tarih','Ürün','Adet','Birim fiyat','Tutar','Komisyon','Kargo','Net','Maliyet','Kâr','Kanal','Müşteri','Not'],';','"','\\');
+  fputcsv($o,['Tarih','Ürün','Adet','Birim fiyat','Tutar','Komisyon','Kargo','Net','Maliyet','Kâr','Kanal','Müşteri','Durum','Not'],';','"','\\');
   foreach($r as $s){ $tut=$s['qty']*$s['unit_price']; $net=$tut-$s['fee']-$s['shipping']; $mal=$s['qty']*$s['unit_cost'];
-    fputcsv($o,[day($s['sold_on']),$c($s['title']),$s['qty'],$n($s['unit_price']),$n($tut),$n($s['fee']),$n($s['shipping']),$n($net),$n($mal),$n($net-$mal),$s['channel'],$c($s['customer']),$c($s['notes'])],';','"','\\'); }
+    fputcsv($o,[day($s['sold_on']),$c($s['title']),$s['qty'],$n($s['unit_price']),$n($tut),$n($s['fee']),$n($s['shipping']),$n($net),$n($mal),$n($net-$mal),$s['channel'],$c($s['customer']),SSTAT[$s['status']]??$s['status'],$c($s['notes'])],';','"','\\'); }
   exit;
 }
 
@@ -125,6 +132,13 @@ if($ok && $_SERVER['REQUEST_METHOD']==='POST' && !isset($_POST['login'])){
   // Ürünler
   if($a==='padd'){ $u=$P('shopier_url'); if($u!==''&&!preg_match('#^https://#',$u))$u='';
     $db->prepare("INSERT INTO products(name,category,price,description,image,shopier_url) VALUES(?,?,?,?,?,?)")->execute([$P('name'),$P('category')?:'Genel',num($P('price')),$P('description'),saveImg($_FILES['image']??null),$u]); back('Ürün eklendi.'); }
+  if($a==='pedit'){ if($P('name')==='') back('Ürün adı boş olamaz.');
+    $u=$P('shopier_url'); if($u!==''&&!preg_match('#^https://#',$u))$u='';
+    $img=saveImg($_FILES['image']??null);
+    if($img){ $r=$db->prepare("SELECT image FROM products WHERE id=?");$r->execute([$id]);$old=$r->fetchColumn(); if($old)@unlink(__DIR__.'/uploads/'.basename($old));
+      $db->prepare("UPDATE products SET image=? WHERE id=?")->execute([$img,$id]); }
+    $db->prepare("UPDATE products SET name=?,category=?,price=?,description=?,shopier_url=? WHERE id=?")->execute([$P('name'),$P('category')?:'Genel',num($P('price')),$P('description'),$u,$id]);
+    back('Ürün güncellendi.'.(!empty($_FILES['image']['name'])&&!$img?' Fotoğraf yüklenemedi: JPG, PNG ya da WEBP olmalı.':'')); }
   if($a==='ptog'){ $db->prepare("UPDATE products SET active=1-active WHERE id=?")->execute([$id]); back(); }
   if($a==='pdel'){ $r=$db->prepare("SELECT image FROM products WHERE id=?");$r->execute([$id]);$im=$r->fetchColumn(); if($im)@unlink(__DIR__.'/uploads/'.basename($im)); $db->prepare("DELETE FROM products WHERE id=?")->execute([$id]); back('Ürün silindi.'); }
 
@@ -190,10 +204,18 @@ if($ok && $_SERVER['REQUEST_METHOD']==='POST' && !isset($_POST['login'])){
     $title=$P('title'); if($title==='' && $pr) $title=$pr['title']; if($title==='') back('Ürün adı boş olamaz.');
     $uc=$P('unit_cost')==='' ? ($pr?round(pcost($pr),2):0) : max(0,num($P('unit_cost')));
     $ch=in_array($P('channel'),CHANNELS,true)?$P('channel'):'Diğer';
-    $db->prepare("INSERT INTO sales(sold_on,print_id,title,qty,unit_price,unit_cost,fee,shipping,channel,customer,notes) VALUES(?,?,?,?,?,?,?,?,?,?,?)")
-       ->execute([dt($P('sold_on')),$pid?:null,$title,max(1,(int)$P('qty')),max(0,num($P('unit_price'))),$uc,max(0,num($P('fee'))),max(0,num($P('shipping'))),$ch,$P('customer'),$P('notes')]);
+    $db->prepare("INSERT INTO sales(sold_on,print_id,title,qty,unit_price,unit_cost,fee,shipping,channel,customer,notes,status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)")
+       ->execute([dt($P('sold_on')),$pid?:null,$title,max(1,(int)$P('qty')),max(0,num($P('unit_price'))),$uc,max(0,num($P('fee'))),max(0,num($P('shipping'))),$ch,$P('customer'),$P('notes'),sstat($P('status'))]);
     back('Satış kaydedildi.');
   }
+  if($a==='sedit'){
+    if($P('title')==='') back('Ürün adı boş olamaz.');
+    $ch=in_array($P('channel'),CHANNELS,true)?$P('channel'):'Diğer';
+    $db->prepare("UPDATE sales SET sold_on=?,title=?,qty=?,unit_price=?,unit_cost=?,fee=?,shipping=?,channel=?,customer=?,notes=?,status=? WHERE id=?")
+       ->execute([dt($P('sold_on')),$P('title'),max(1,(int)$P('qty')),max(0,num($P('unit_price'))),max(0,num($P('unit_cost'))),max(0,num($P('fee'))),max(0,num($P('shipping'))),$ch,$P('customer'),$P('notes'),sstat($P('status')),$id]);
+    back('Satış güncellendi.');
+  }
+  if($a==='sstat'){ $ss=sstat($P('status')); $db->prepare("UPDATE sales SET status=? WHERE id=?")->execute([$ss,$id]); back('Sipariş durumu: '.SSTAT[$ss].'.'); }
   if($a==='sdel'){ $db->prepare("DELETE FROM sales WHERE id=?")->execute([$id]); back('Satış silindi.'); }
   back();
 }
@@ -312,10 +334,19 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
   $net=$sum['ciro']-$sum['kes']; $kar=$net-$sum['mal'];
   $r=$db->prepare("SELECT channel, COUNT(*) n, SUM(qty*unit_price) c FROM sales WHERE $w GROUP BY channel ORDER BY c DESC"); $r->execute($pa); $chs=$r->fetchAll();
   $r=$db->prepare("SELECT * FROM sales WHERE $w ORDER BY sold_on DESC, id DESC LIMIT 300"); $r->execute($pa); $sales=$r->fetchAll();
-  $plist=$db->query("SELECT * FROM prints WHERE status='ok' ORDER BY printed_on DESC, id DESC LIMIT 200")->fetchAll(); ?>
+  $plist=$db->query("SELECT * FROM prints WHERE status='ok' ORDER BY printed_on DESC, id DESC LIMIT 200")->fetchAll();
+  $pend=$db->query("SELECT * FROM sales WHERE status<>'teslim' ORDER BY sold_on, id")->fetchAll();   // dönemden bağımsız, teslim edilmemiş tüm siparişler
+  $sbadge=fn($s)=>$s['status']==='teslim' ? '' : '<span class="badge'.($s['status']==='kargoda'?' t':'').'">'.h(SSTAT[$s['status']]??$s['status']).'</span>'; ?>
 <div class="cards"><div><small><?=h(plabel())?> · satış</small><b><?=$sum['n']?> <small>(<?=$sum['adet']?> adet)</small></b></div><div><small>Ciro</small><b><?=tl($sum['ciro'])?></b></div><div><small>Komisyon + kargo</small><b><?=tl($sum['kes'])?></b></div><div><small>Net</small><b><?=tl($net)?></b></div><div><small>Kâr</small><b class="<?=$kar<0?'neg':'pos'?>"><?=tl($kar)?></b></div></div>
 <?php if($chs): ?><p class="chs"><?php foreach($chs as $c): ?><span><b><?=h($c['channel'])?></b> <?=tl($c['c'])?> <small>(<?=$c['n']?>)</small></span><?php endforeach; ?></p><?php endif; ?>
-<details class="add" open><summary>+ Yeni satış kaydet</summary>
+<?php if($pend): ?><div style="background:#fff;border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:6px;padding:10px 14px;margin:12px 0">
+<b>Bekleyen siparişler (<?=count($pend)?>)</b>
+<?php foreach($pend as $s): ?><div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;padding:8px 0;border-top:1px solid var(--line);margin-top:8px">
+<span><?=day($s['sold_on'])?> · <b><?=h($s['title'])?></b><?=$s['customer']?' · '.h($s['customer']):''?><?=$sbadge($s)?></span>
+<form method="post" class="inl"><?=$C?><input type="hidden" name="a" value="sstat"><input type="hidden" name="id" value="<?=$s['id']?>">
+<?php if($s['status']==='hazirlaniyor'): ?><button class="alt" name="status" value="kargoda">Kargoya verildi</button><?php endif; ?><button name="status" value="teslim">Teslim edildi</button></form></div>
+<?php endforeach; ?></div><?php endif; ?>
+<details class="add"<?=$pend?'':' open'?>><summary>+ Yeni satış kaydet</summary>
 <form method="post" class="row" id="sform"><?=$C?><input type="hidden" name="a" value="sadd">
 <label class="lbl">Tarih<input type="date" name="sold_on" value="<?=$today?>"></label>
 <label class="lbl full2">Baskıdan seç (isteğe bağlı)<select name="print_id"><option value="">Baskı seçmeden gir</option><?php foreach($plist as $p): $left=(int)$p['qty']-(int)($sold[$p['id']]??0); ?><option value="<?=$p['id']?>" data-title="<?=h($p['title'])?>" data-price="<?=$p['sale_price']+0?>" data-cost="<?=round(pcost($p),2)?>"><?=day($p['printed_on'])?> · <?=h($p['title'])?><?=$left>0?' (elde '.$left.')':' (hepsi satıldı)'?></option><?php endforeach; ?></select></label>
@@ -327,25 +358,43 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 <label class="lbl">Komisyon (₺)<input name="fee" inputmode="decimal" placeholder="0"></label>
 <label class="lbl">Kargo – sizin ödediğiniz (₺)<input name="shipping" inputmode="decimal" placeholder="0"></label>
 <label class="lbl">Müşteri (isteğe bağlı)<input name="customer" placeholder="ad ya da kullanıcı adı"></label>
+<label class="lbl">Sipariş durumu<select name="status"><?php foreach(SSTAT as $k=>$v): ?><option value="<?=$k?>"><?=$v?></option><?php endforeach; ?></select></label>
 <label class="lbl full">Not<textarea name="notes" rows="2"></textarea></label>
 <button>Satışı kaydet</button></form></details>
 <p><a href="?t=s&amp;ay=<?=h($ay)?>&amp;csv=satis">Excel'e aktar (CSV) · <?=h(plabel())?></a></p>
 <div class="x"><table><tr><th>Tarih</th><th>Ürün</th><th>Kanal</th><th>Adet</th><th>Tutar</th><th>Kesinti</th><th>Net</th><th>Kâr</th><th></th></tr>
 <?php foreach($sales as $s): $tut=$s['qty']*$s['unit_price']; $kes=$s['fee']+$s['shipping']; $nt=$tut-$kes; $k=$nt-$s['qty']*$s['unit_cost']; ?>
-<tr><td class="nowrap"><?=day($s['sold_on'])?></td><td><b><?=h($s['title'])?></b><?=$s['customer']?'<br><small>'.h($s['customer']).'</small>':''?><?=$s['notes']?'<br><small>'.h($s['notes']).'</small>':''?></td>
+<tr><td class="nowrap"><?=day($s['sold_on'])?></td><td><b><?=h($s['title'])?></b><?=$sbadge($s)?><?=$s['customer']?'<br><small>'.h($s['customer']).'</small>':''?><?=$s['notes']?'<br><small>'.h($s['notes']).'</small>':''?></td>
 <td><?=h($s['channel'])?></td><td><?=(int)$s['qty']?><?=$s['qty']>1?'<br><small>× '.tl($s['unit_price']).'</small>':''?></td><td class="nowrap"><?=tl($tut)?></td><td class="nowrap"><?=$kes>0?tl($kes):'—'?></td><td class="nowrap"><?=tl($nt)?></td>
 <td class="nowrap"><b class="<?=$k<0?'neg':'pos'?>"><?=tl($k)?></b><?=$s['unit_cost']<=0?'<br><small>maliyet girilmedi</small>':''?></td>
-<td class="act"><form method="post"><?=$C?><input type="hidden" name="id" value="<?=$s['id']?>"><button class="lnk neg" name="a" value="sdel" onclick="return confirm('Bu satış silinsin mi?')">Sil</button></form></td></tr>
+<td class="act"><details class="ed"><summary>Düzenle</summary><form method="post" class="row"><?=$C?><input type="hidden" name="a" value="sedit"><input type="hidden" name="id" value="<?=$s['id']?>">
+<label class="lbl">Tarih<input type="date" name="sold_on" value="<?=h($s['sold_on'])?>"></label><label class="lbl">Ürün<input name="title" value="<?=h($s['title'])?>" required></label>
+<label class="lbl">Adet<input name="qty" type="number" min="1" value="<?=(int)$s['qty']?>"></label><label class="lbl">Birim fiyat (₺)<input name="unit_price" inputmode="decimal" value="<?=h($s['unit_price']+0)?>"></label>
+<label class="lbl">Birim maliyet (₺)<input name="unit_cost" inputmode="decimal" value="<?=h($s['unit_cost']+0)?>"></label>
+<label class="lbl">Kanal<select name="channel"><?php foreach(CHANNELS as $c): ?><option<?=$s['channel']===$c?' selected':''?>><?=$c?></option><?php endforeach; ?></select></label>
+<label class="lbl">Komisyon (₺)<input name="fee" inputmode="decimal" value="<?=h($s['fee']+0)?>"></label><label class="lbl">Kargo (₺)<input name="shipping" inputmode="decimal" value="<?=h($s['shipping']+0)?>"></label>
+<label class="lbl">Müşteri<input name="customer" value="<?=h($s['customer'])?>"></label>
+<label class="lbl">Sipariş durumu<select name="status"><?php foreach(SSTAT as $k=>$v): ?><option value="<?=$k?>"<?=$s['status']===$k?' selected':''?>><?=$v?></option><?php endforeach; ?></select></label>
+<label class="lbl full">Not<textarea name="notes" rows="2"><?=h($s['notes'])?></textarea></label><button>Kaydet</button></form></details>
+<form method="post"><?=$C?><input type="hidden" name="id" value="<?=$s['id']?>"><button class="lnk neg" name="a" value="sdel" onclick="return confirm('Bu satış silinsin mi?')">Sil</button></form></td></tr>
 <?php endforeach; if(!$sales): ?><tr><td colspan="9" class="empty"><?=h(plabel())?> için kayıtlı satış yok.</td></tr><?php endif; ?></table></div>
 
 <?php else: /* ================= ÜRÜNLER (sitede görünenler) ================= */ ?>
 <form method="post" enctype="multipart/form-data" class="row"><?=$C?><input type="hidden" name="a" value="padd">
 <input name="name" placeholder="Ürün adı" required><input name="category" placeholder="Kategori"><input name="price" inputmode="decimal" placeholder="Fiyat (₺)" required>
 <input name="shopier_url" placeholder="Shopier ürün linki (https://...)"><input type="file" name="image" accept="image/jpeg,image/png,image/webp">
-<textarea name="description" placeholder="Kısa açıklama" rows="2"></textarea><button>Ürün ekle</button></form>
+<textarea name="description" placeholder="Açıklama: ölçü, malzeme, kişiselleştirme seçenekleri (ürün sayfasında görünür)" rows="3"></textarea><button>Ürün ekle</button></form>
+<p class="hint">Yayındaki her ürünün kendi sayfası olur (örn. mikro3datolye.com.tr/urun/12-isimli-anahtarlik) ve Google'a otomatik bildirilir. Açıklamayı birkaç cümleyle, müşterinin arayacağı kelimelerle yazın.</p>
 <div class="x"><table><tr><th>Ürün</th><th>Fiyat</th><th>Durum</th><th></th></tr>
-<?php foreach($db->query("SELECT * FROM products ORDER BY id DESC") as $p): ?><tr><td><?=h($p['name'])?><br><small><?=h($p['category'])?></small></td><td><?=tl($p['price'])?></td><td><?=$p['active']?'Yayında':'Gizli'?></td>
-<td><form method="post" style="display:inline"><?=$C?><input type="hidden" name="id" value="<?=$p['id']?>"><button class="alt" name="a" value="ptog"><?=$p['active']?'Gizle':'Yayınla'?></button>
+<?php foreach($db->query("SELECT * FROM products ORDER BY id DESC") as $p): ?><tr><td><?=h($p['name'])?><br><small><?=h($p['category'])?></small></td><td><?=tl($p['price'])?></td>
+<td><?=$p['active']?'Yayında<br><small><a href="'.h(urunUrl($p)).'" target="_blank" rel="noopener">Sayfayı gör</a></small>':'Gizli'?></td>
+<td class="act"><details class="ed"><summary>Düzenle</summary><form method="post" enctype="multipart/form-data" class="row"><?=$C?><input type="hidden" name="a" value="pedit"><input type="hidden" name="id" value="<?=$p['id']?>">
+<label class="lbl">Ad<input name="name" value="<?=h($p['name'])?>" required></label><label class="lbl">Kategori<input name="category" value="<?=h($p['category'])?>"></label>
+<label class="lbl">Fiyat (₺)<input name="price" inputmode="decimal" value="<?=h($p['price']+0)?>"></label><label class="lbl full">Shopier ürün linki<input name="shopier_url" value="<?=h($p['shopier_url'])?>" placeholder="https://..."></label>
+<label class="lbl full">Açıklama<textarea name="description" rows="4"><?=h($p['description'])?></textarea></label>
+<label class="lbl full">Yeni fotoğraf (değiştirmek isterseniz)<input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
+<button>Kaydet</button></form></details>
+<form method="post"><?=$C?><input type="hidden" name="id" value="<?=$p['id']?>"><button class="alt" name="a" value="ptog"><?=$p['active']?'Gizle':'Yayınla'?></button>
 <button class="del" name="a" value="pdel" onclick="return confirm('Bu ürün silinsin mi?')">Sil</button></form></td></tr><?php endforeach; ?></table></div>
 <?php endif; endif; ?></main>
 <script>
