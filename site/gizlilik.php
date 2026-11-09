@@ -96,7 +96,6 @@ function loadAnalytics(){
   <h2>4. Üçüncü taraf hizmetler</h2>
   <ul>
     <li><b>Google Analytics (Google LLC):</b> Onay verirseniz ziyaret bilgileri Google'ın sunucularına gönderilir.</li>
-    <li><b>Google Fonts (Google LLC):</b> Sitedeki yazı tipleri Google'ın sunucularından yüklenir. Bu sırada IP adresiniz ve tarayıcı bilginiz Google'a iletilir.</li>
     <li><b>Instagram (Meta Platforms):</b> "Paylaşımları göster" düğmesine basarsanız Instagram'ın kodu yüklenir ve Instagram kendi çerezlerini kullanabilir.</li>
     <li><b>WhatsApp, Shopier ve Dolap:</b> Bu bağlantılara tıkladığınızda ilgili hizmetin kendi sitesine ya da uygulamasına geçersiniz. Orada o hizmetin gizlilik politikası geçerlidir.</li>
   </ul>
