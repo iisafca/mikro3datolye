@@ -1,4 +1,4 @@
-<?php require 'config.php'; require 'urun-ortak.php';
+<?php require 'config.php'; require 'urun-ortak.php'; require 'panel-ek.php';
 /* Mikro 3D Atölye yönetim paneli: stok, baskılar, satışlar, ürünler. */
 date_default_timezone_set('Europe/Istanbul');
 header('X-Robots-Tag: noindex');
@@ -10,7 +10,7 @@ const CHANNELS=['Tanıdık','Shopier','Dolap','Instagram','WhatsApp','Elden','Di
 const SSTAT=['hazirlaniyor'=>'Hazırlanıyor','kargoda'=>'Kargoda','teslim'=>'Teslim edildi'];
 const AYLAR=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
-$t=$_GET['t']??'m'; if(!in_array($t,['m','b','s','p'],true)) $t='m';
+$t=$_GET['t']??'o'; if(!in_array($t,['o','m','r','b','s','g','p'],true)) $t='o';
 $ay=$_GET['ay']??date('Y-m'); if($ay!=='hepsi' && !preg_match('/^\d{4}-(0[1-9]|1[0-2])$/',$ay)) $ay=date('Y-m');
 
 /* "Bu cihazda açık kalsın": imzalı çerez. Şifre değişirse tüm cihazlardaki çerezler geçersiz olur. */
@@ -24,10 +24,11 @@ if(empty($_SESSION['ok']) && !empty($env['ADMIN_PASS']) && !empty($_COOKIE['m3d_
 }
 
 if(isset($_POST['login'])){
-  if(!empty($env['ADMIN_PASS']) && hash_equals($env['ADMIN_PASS'],(string)$_POST['pass'])){
+  if(ek_blocked($db)){ $msg='Çok fazla hatalı deneme yapıldı. 15 dakika sonra tekrar deneyin.'; }
+  elseif(!empty($env['ADMIN_PASS']) && hash_equals($env['ADMIN_PASS'],(string)$_POST['pass'])){
     session_regenerate_id(true); $_SESSION['ok']=1; if(!empty($_POST['keep'])) keepSet(time()+KEEP_DAYS*86400);
-    header('Location: admin.php'); exit; }
-  $msg='Şifre hatalı.'; usleep(600000);
+    ek_login_ok($db); header('Location: admin.php'); exit; }
+  else{ ek_login_fail($db); $msg='Şifre hatalı.'; usleep(600000); }
 }
 if(isset($_GET['out'])){ keepSet(0); session_destroy(); header('Location: admin.php'); exit; }
 
@@ -102,6 +103,7 @@ function sstat($v){ return array_key_exists($v,SSTAT) ? $v : 'teslim'; }
 
 $ok=!empty($_SESSION['ok']); $S=[];
 if($ok){ migrate($db); $S=$db->query("SELECT k,v FROM settings")->fetchAll(PDO::FETCH_KEY_PAIR); }
+if($ok){ ek_migrate($db,$S); if($_SERVER['REQUEST_METHOD']==='GET' && !isset($_GET['csv']) && !isset($_GET['yedek'])) ek_auto_backup($db,$S); }
 $watt=num($S['printer_watt']??0); $kwh=num($S['kwh_price']??0);
 
 /* ---------- Satışları Excel için CSV olarak indir ---------- */
@@ -147,6 +149,7 @@ if($ok && isset($_GET['yedek'])){
 if($ok && $_SERVER['REQUEST_METHOD']==='POST' && !isset($_POST['login'])){
   if(!hash_equals($_SESSION['csrf'],(string)($_POST['csrf']??''))) exit('Geçersiz istek.');
   $a=$_POST['a']??''; $id=(int)($_POST['id']??0); $P=fn($k)=>trim((string)($_POST[$k]??''));
+  ek_post($db,$a,$id,$P,$watt,$kwh);
 
   // Ürünler
   if($a==='padd'){ $u=$P('shopier_url'); if($u!==''&&!preg_match('#^https://#',$u))$u='';
@@ -251,8 +254,8 @@ if($ok){
 $today=date('Y-m-d');
 $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Atölye paneli</title><link rel="stylesheet" href="style.css?v=3">
-<link rel="manifest" href="admin-manifest.json"><meta name="theme-color" content="#0b7a75">
+<title>Atölye paneli</title><link rel="stylesheet" href="style.css?v=4">
+<link rel="manifest" href="admin-manifest.json"><meta name="theme-color" content="#1b1931">
 <link rel="icon" type="image/png" href="app-icon.php?s=192"><link rel="apple-touch-icon" href="app-icon.php?s=180">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Atölye">
 </head><body><main class="wrap" style="padding:20px 20px 60px">
@@ -261,16 +264,16 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 <label class="ck"><input type="checkbox" name="keep" value="1" checked> Bu cihazda açık kalsın (<?=KEEP_DAYS?> gün)</label><button name="login" value="1">Giriş yap</button></form>
 <?php else: ?>
 <h1>Atölye paneli</h1>
-<nav class="tabs"><a href="?t=m"<?=$t==='m'?' class="on"':''?>>Stok</a><a href="?t=b"<?=$t==='b'?' class="on"':''?>>Baskılar</a><a href="?t=s"<?=$t==='s'?' class="on"':''?>>Satışlar</a><a href="?t=p"<?=$t==='p'?' class="on"':''?>>Ürünler</a><span class="sp"></span><a href="?yedek=1" class="yb-link">Yedek indir</a><a href="./">Siteyi gör</a><a href="?out=1">Çıkış yap</a></nav>
+<nav class="tabs"><?=ek_nav($t)?><span class="sp"></span><a href="?yedek=1" class="yb-link">Yedek indir</a><a href="./">Siteyi gör</a><a href="?out=1">Çıkış yap</a></nav>
 <?php if($msg)echo '<p class="msg">'.h($msg).'</p>';
   $lb=$S['last_backup']??''; $lbd=$lb?(int)floor((time()-strtotime($lb))/86400):null;
-  if($lbd===null||$lbd>=30): ?><p class="msg" id="yb" style="background:#fde3d9"><?=$lbd===null?'Henüz hiç yedek almadınız.':'Son yedek '.$lbd.' gün önce alındı.'?> Kayıtlarınızı korumak için ayda bir yedek indirin. <a href="?yedek=1" class="yb-link"><b>Şimdi indir</b></a></p><?php endif; ?>
+  if($lbd===null||$lbd>=30): ?><p class="msg warn" id="yb"><?=$lbd===null?'Henüz hiç yedek almadınız.':'Son yedek '.$lbd.' gün önce alındı.'?> Kayıtlarınızı korumak için ayda bir yedek indirin. <a href="?yedek=1" class="yb-link"><b>Şimdi indir</b></a></p><?php endif; ?>
 
-<?php if($t==='b'||$t==='s'): ?>
+<?php if(in_array($t,['b','s','g'],true)): ?>
 <form method="get" class="per"><input type="hidden" name="t" value="<?=$t?>"><label>Dönem <input type="month" name="ay" value="<?=$ay==='hepsi'?'':h($ay)?>"></label><button class="alt">Göster</button><a href="?t=<?=$t?>&amp;ay=hepsi">Tüm zamanlar</a><a href="?t=<?=$t?>">Bu ay</a></form>
 <?php endif; ?>
 
-<?php if($t==='m'): /* ================= STOK ================= */
+<?php if(ek_page($t,$db,$C,$S,$watt,$kwh,$mats,$today)): elseif($t==='m'): /* ================= STOK ================= */
   $low=0; $val=0; foreach($mats as $m){ if($m['qty']<=$m['min_qty']) $low++; $val+=$m['qty']*ucost($m); } ?>
 <div class="cards"><div><small>Malzeme</small><b><?=count($mats)?></b></div><div><small>Azalan</small><b class="<?=$low?'neg':''?>"><?=$low?></b></div><div><small>Stok değeri</small><b><?=tl($val)?></b></div></div>
 <details class="add"<?=$mats?'':' open'?>><summary>+ Yeni malzeme ekle</summary>
@@ -302,6 +305,7 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 <button>Kaydet</button></form></details>
 <form method="post"><?=$C?><input type="hidden" name="id" value="<?=$m['id']?>"><button class="lnk neg" name="a" value="mdel" onclick="return confirm('Bu malzeme silinsin mi?')">Sil</button></form></td></tr>
 <?php endforeach; if(!$mats): ?><tr><td colspan="5" class="empty">Henüz malzeme yok. Yukarıdan ilk makaranızı ekleyin.</td></tr><?php endif; ?></table></div>
+<?php ek_stok($db,$C,$mats,$matOpts,$today); ?>
 
 <?php elseif($t==='b'): /* ================= BASKILAR ================= */
   [$w,$pa]=per('printed_on'); [$w2,$pa2]=per('p.printed_on');
@@ -334,7 +338,7 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 <?php foreach($prints as $p): $u=pcost($p); $tot=$u*max(1,(int)$p['qty']); $sd=(int)($sold[$p['id']]??0); ?>
 <tr><td class="nowrap"><?=day($p['printed_on'])?></td>
 <td><b><?=h($p['title'])?></b><?=$p['status']!=='ok'?'<span class="badge'.($p['status']==='test'?' t':'').'">'.h(STATUS[$p['status']]??$p['status']).'</span>':''?><?=$p['notes']?'<br><small>'.h($p['notes']).'</small>':''?></td>
-<td><?php foreach($pm[$p['id']]??[] as $x): ?><div class="nowrap"><?=sw($x['hex'])?><?=h($x['name'])?> <small><?=q($x['amount'])?> <?=h($x['unit'])?></small></div><?php endforeach; ?><?=$p['hours']>0?'<small>'.q($p['hours']).' saat</small>':''?></td>
+<td><?php foreach($pm[$p['id']]??[] as $x): ?><div class="nowrap"><?=sw($x['hex'])?><?=!empty($x['part'])?h($x['part']).': ':''?><?=h($x['name'])?> <small><?=q($x['amount'])?> <?=h($x['unit'])?></small></div><?php endforeach; ?><?=$p['hours']>0?'<small>'.q($p['hours']).' saat</small>':''?></td>
 <td class="nowrap"><?=(int)$p['qty']?><?=$sd?'<br><small>'.$sd.' satıldı</small>':''?></td>
 <td class="nowrap"><?=tl($tot)?><br><small>adet: <?=tl($u)?></small></td>
 <td class="nowrap"><?=$p['sale_price']>0?tl($p['sale_price']):'—'?></td>
@@ -345,8 +349,8 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 <label class="lbl">Diğer maliyet (₺)<input name="extra_cost" inputmode="decimal" value="<?=h($p['extra_cost']+0)?>"></label><label class="lbl">Satış fiyatı / adet<input name="sale_price" inputmode="decimal" value="<?=h($p['sale_price']+0)?>"></label>
 <label class="lbl">Durum<select name="status"><?php foreach(STATUS as $k=>$v): ?><option value="<?=$k?>"<?=$p['status']===$k?' selected':''?>><?=$v?></option><?php endforeach; ?></select></label>
 <label class="lbl full">Not<textarea name="notes" rows="2"><?=h($p['notes'])?></textarea></label>
-<p class="full hint">Kullanılan malzemeyi değiştirmek için baskıyı silip yeniden kaydedin.</p><button>Kaydet</button></form></details>
-<form method="post"><?=$C?><input type="hidden" name="id" value="<?=$p['id']?>"><button class="lnk neg" name="a" value="bdel" onclick="return confirm('Bu baskı silinsin mi?<?=$p['deducted']?' Kullanılan malzeme stoğa geri eklenir.':''?>')">Sil</button></form></td></tr>
+<button>Kaydet</button></form><?php ek_bmat_form($p,$pm[$p['id']]??[],$C,$matOpts); ?></details>
+<form method="post"><?=$C?><input type="hidden" name="id" value="<?=$p['id']?>"><button class="lnk" name="a" value="bcopy">Kopyala</button> <button class="lnk neg" name="a" value="bdel" onclick="return confirm('Bu baskı silinsin mi?<?=$p['deducted']?' Kullanılan malzeme stoğa geri eklenir.':''?>')">Sil</button></form></td></tr>
 <?php endforeach; if(!$prints): ?><tr><td colspan="8" class="empty"><?=h(plabel())?> için kayıtlı baskı yok.</td></tr><?php endif; ?></table></div>
 
 <?php elseif($t==='s'): /* ================= SATIŞLAR ================= */
@@ -360,13 +364,7 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
   $sbadge=fn($s)=>$s['status']==='teslim' ? '' : '<span class="badge'.($s['status']==='kargoda'?' t':'').'">'.h(SSTAT[$s['status']]??$s['status']).'</span>'; ?>
 <div class="cards"><div><small><?=h(plabel())?> · satış</small><b><?=$sum['n']?> <small>(<?=$sum['adet']?> adet)</small></b></div><div><small>Ciro</small><b><?=tl($sum['ciro'])?></b></div><div><small>Komisyon + kargo</small><b><?=tl($sum['kes'])?></b></div><div><small>Net</small><b><?=tl($net)?></b></div><div><small>Kâr</small><b class="<?=$kar<0?'neg':'pos'?>"><?=tl($kar)?></b></div></div>
 <?php if($chs): ?><p class="chs"><?php foreach($chs as $c): ?><span><b><?=h($c['channel'])?></b> <?=tl($c['c'])?> <small>(<?=$c['n']?>)</small></span><?php endforeach; ?></p><?php endif; ?>
-<?php if($pend): ?><div style="background:#fff;border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:6px;padding:10px 14px;margin:12px 0">
-<b>Bekleyen siparişler (<?=count($pend)?>)</b>
-<?php foreach($pend as $s): ?><div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;padding:8px 0;border-top:1px solid var(--line);margin-top:8px">
-<span><?=day($s['sold_on'])?> · <b><?=h($s['title'])?></b><?=$s['customer']?' · '.h($s['customer']):''?><?=$sbadge($s)?></span>
-<form method="post" class="inl"><?=$C?><input type="hidden" name="a" value="sstat"><input type="hidden" name="id" value="<?=$s['id']?>">
-<?php if($s['status']==='hazirlaniyor'): ?><button class="alt" name="status" value="kargoda">Kargoya verildi</button><?php endif; ?><button name="status" value="teslim">Teslim edildi</button></form></div>
-<?php endforeach; ?></div><?php endif; ?>
+<?php ek_pending($db,$C); ?>
 <details class="add"<?=$pend?'':' open'?>><summary>+ Yeni satış kaydet</summary>
 <form method="post" class="row" id="sform"><?=$C?><input type="hidden" name="a" value="sadd">
 <label class="lbl">Tarih<input type="date" name="sold_on" value="<?=$today?>"></label>
@@ -380,12 +378,13 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 <label class="lbl">Kargo – sizin ödediğiniz (₺)<input name="shipping" inputmode="decimal" placeholder="0"></label>
 <label class="lbl">Müşteri (isteğe bağlı)<input name="customer" placeholder="ad ya da kullanıcı adı"></label>
 <label class="lbl">Sipariş durumu<select name="status"><?php foreach(SSTAT as $k=>$v): ?><option value="<?=$k?>"><?=$v?></option><?php endforeach; ?></select></label>
+<?=ek_sale_fields(null)?>
 <label class="lbl full">Not<textarea name="notes" rows="2"></textarea></label>
 <button>Satışı kaydet</button></form></details>
 <p><a href="?t=s&amp;ay=<?=h($ay)?>&amp;csv=satis">Excel'e aktar (CSV) · <?=h(plabel())?></a></p>
 <div class="x"><table><tr><th>Tarih</th><th>Ürün</th><th>Kanal</th><th>Adet</th><th>Tutar</th><th>Kesinti</th><th>Net</th><th>Kâr</th><th></th></tr>
 <?php foreach($sales as $s): $tut=$s['qty']*$s['unit_price']; $kes=$s['fee']+$s['shipping']; $nt=$tut-$kes; $k=$nt-$s['qty']*$s['unit_cost']; ?>
-<tr><td class="nowrap"><?=day($s['sold_on'])?></td><td><b><?=h($s['title'])?></b><?=$sbadge($s)?><?=$s['customer']?'<br><small>'.h($s['customer']).'</small>':''?><?=$s['notes']?'<br><small>'.h($s['notes']).'</small>':''?></td>
+<tr><td class="nowrap"><?=day($s['sold_on'])?></td><td><b><?=h($s['title'])?></b><?=$sbadge($s)?><?=ek_sale_info($s)?><?=$s['customer']?'<br><small>'.h($s['customer']).'</small>':''?><?=$s['notes']?'<br><small>'.h($s['notes']).'</small>':''?></td>
 <td><?=h($s['channel'])?></td><td><?=(int)$s['qty']?><?=$s['qty']>1?'<br><small>× '.tl($s['unit_price']).'</small>':''?></td><td class="nowrap"><?=tl($tut)?></td><td class="nowrap"><?=$kes>0?tl($kes):'—'?></td><td class="nowrap"><?=tl($nt)?></td>
 <td class="nowrap"><b class="<?=$k<0?'neg':'pos'?>"><?=tl($k)?></b><?=$s['unit_cost']<=0?'<br><small>maliyet girilmedi</small>':''?></td>
 <td class="act"><details class="ed"><summary>Düzenle</summary><form method="post" class="row"><?=$C?><input type="hidden" name="a" value="sedit"><input type="hidden" name="id" value="<?=$s['id']?>">
@@ -396,7 +395,7 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 <label class="lbl">Komisyon (₺)<input name="fee" inputmode="decimal" value="<?=h($s['fee']+0)?>"></label><label class="lbl">Kargo (₺)<input name="shipping" inputmode="decimal" value="<?=h($s['shipping']+0)?>"></label>
 <label class="lbl">Müşteri<input name="customer" value="<?=h($s['customer'])?>"></label>
 <label class="lbl">Sipariş durumu<select name="status"><?php foreach(SSTAT as $k=>$v): ?><option value="<?=$k?>"<?=$s['status']===$k?' selected':''?>><?=$v?></option><?php endforeach; ?></select></label>
-<label class="lbl full">Not<textarea name="notes" rows="2"><?=h($s['notes'])?></textarea></label><button>Kaydet</button></form></details>
+<?=ek_sale_fields($s)?><label class="lbl full">Not<textarea name="notes" rows="2"><?=h($s['notes'])?></textarea></label><button>Kaydet</button></form></details>
 <form method="post"><?=$C?><input type="hidden" name="id" value="<?=$s['id']?>"><button class="lnk neg" name="a" value="sdel" onclick="return confirm('Bu satış silinsin mi?')">Sil</button></form></td></tr>
 <?php endforeach; if(!$sales): ?><tr><td colspan="9" class="empty"><?=h(plabel())?> için kayıtlı satış yok.</td></tr><?php endif; ?></table></div>
 
