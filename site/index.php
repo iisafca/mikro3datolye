@@ -4,7 +4,7 @@ $waMsg  = $wa . '?text=' . rawurlencode('Merhaba, kişiye özel bir ürün hakk�
 $ig     = 'https://www.instagram.com/mikro3datolye';
 $shopier= 'https://www.shopier.com/mikro3datolye';
 $dolap  = 'https://link.dolap.com/1e0r7d';
-$mail   = 'isafca16@gmail.com';
+$mail   = 'info@mikro3datolye.com.tr';
 $cats = $db->query("SELECT DISTINCT category FROM products WHERE active=1 ORDER BY category")->fetchAll(PDO::FETCH_COLUMN);
 $c = $_GET['k'] ?? '';
 $st = $c !== '' ? $db->prepare("SELECT * FROM products WHERE active=1 AND category=? ORDER BY id DESC") : $db->prepare("SELECT * FROM products WHERE active=1 AND ?='' ORDER BY id DESC");

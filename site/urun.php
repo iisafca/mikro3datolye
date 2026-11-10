@@ -1,6 +1,6 @@
 <?php require 'config.php'; require 'urun-ortak.php';
 /* Tek ürün sayfası. Adres: /urun/12-urun-adi (.htaccess bu adresi urun.php?id=12'ye yönlendirir). */
-$ig='https://www.instagram.com/mikro3datolye'; $shopier='https://www.shopier.com/mikro3datolye'; $dolap='https://link.dolap.com/1e0r7d'; $mail='isafca16@gmail.com';
+$ig='https://www.instagram.com/mikro3datolye'; $shopier='https://www.shopier.com/mikro3datolye'; $dolap='https://link.dolap.com/1e0r7d'; $mail='info@mikro3datolye.com.tr';
 $waMsg=WA.'?text='.rawurlencode('Merhaba, kişiye özel bir ürün hakkında bilgi almak istiyorum.');
 
 $st=$db->prepare("SELECT * FROM products WHERE id=? AND active=1"); $st->execute([(int)($_GET['id']??0)]); $p=$st->fetch();

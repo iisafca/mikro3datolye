@@ -1,6 +1,6 @@
 <?php
 /* Gizlilik ve çerez politikası. Veritabanı gerektirmez, bu yüzden config.php yüklenmez. */
-$mail  = 'isafca16@gmail.com';
+$mail  = 'info@mikro3datolye.com.tr';
 $ig    = 'https://www.instagram.com/mikro3datolye';
 $wa    = 'https://wa.me/905346668102';
 // Veri sorumlusu: şahıs işletmesiyse ad soyad, şirketse ticari unvan yazın.
