@@ -52,6 +52,25 @@ function saveImg($f){
   $s=match($i[2]){IMAGETYPE_JPEG=>imagecreatefromjpeg($f['tmp_name']),IMAGETYPE_PNG=>imagecreatefrompng($f['tmp_name']),default=>imagecreatefromwebp($f['tmp_name'])};
   $k=min(1,1000/max($i[0],$i[1])); $d=imagescale($s,max(1,(int)($i[0]*$k)),max(1,(int)($i[1]*$k)));
   if(!is_dir(__DIR__.'/uploads'))mkdir(__DIR__.'/uploads',0755); $n=bin2hex(random_bytes(8)).'.webp'; imagewebp($d,__DIR__.'/uploads/'.$n,80); return $n;}
+/* Fotoğrafı linkten alır (örn. Shopier ürün fotoğrafı): sunucu indirir, saveImg ile küçültüp kaydeder. */
+function urlImg($url){
+  $url=trim((string)$url); if($url==='') return null;
+  $u=parse_url($url); if(($u['scheme']??'')!=='https'||empty($u['host'])) return null;
+  $ips=gethostbynamel($u['host']); if(!$ips) return null;
+  foreach($ips as $ip) if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)) return null;   // iç ağ adreslerine istek yapılmaz
+  $data=false; $max=10485760;
+  if(function_exists('curl_init')){
+    $c=curl_init($url);
+    curl_setopt_array($c,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_MAXREDIRS=>3,CURLOPT_TIMEOUT=>20,CURLOPT_MAXFILESIZE=>$max,CURLOPT_USERAGENT=>'Mozilla/5.0 (Mikro3D panel)']);
+    if(defined('CURLPROTO_HTTPS')){ curl_setopt($c,CURLOPT_PROTOCOLS,CURLPROTO_HTTPS); curl_setopt($c,CURLOPT_REDIR_PROTOCOLS,CURLPROTO_HTTPS); }
+    $data=curl_exec($c); if((int)curl_getinfo($c,CURLINFO_HTTP_CODE)!==200) $data=false;
+  } elseif(ini_get('allow_url_fopen')){
+    $data=@file_get_contents($url,false,stream_context_create(['http'=>['timeout'=>20,'user_agent'=>'Mozilla/5.0 (Mikro3D panel)']]),0,$max+1);
+  }
+  if(!is_string($data)||$data===''||strlen($data)>$max) return null;
+  $tmp=tempnam(sys_get_temp_dir(),'m3d'); file_put_contents($tmp,$data);
+  $n=saveImg(['error'=>0,'tmp_name'=>$tmp]); @unlink($tmp); return $n;
+}
 
 /* Yeni tablolar ve sütunlar yoksa oluşturur. Var olan veriye dokunmaz. */
 function migrate($db){
@@ -131,14 +150,16 @@ if($ok && $_SERVER['REQUEST_METHOD']==='POST' && !isset($_POST['login'])){
 
   // Ürünler
   if($a==='padd'){ $u=$P('shopier_url'); if($u!==''&&!preg_match('#^https://#',$u))$u='';
-    $db->prepare("INSERT INTO products(name,category,price,description,image,shopier_url) VALUES(?,?,?,?,?,?)")->execute([$P('name'),$P('category')?:'Genel',num($P('price')),$P('description'),saveImg($_FILES['image']??null),$u]); back('Ürün eklendi.'); }
+    $img=saveImg($_FILES['image']??null) ?? urlImg($P('image_url'));
+    $db->prepare("INSERT INTO products(name,category,price,description,image,shopier_url) VALUES(?,?,?,?,?,?)")->execute([$P('name'),$P('category')?:'Genel',num($P('price')),$P('description'),$img,$u]);
+    back('Ürün eklendi.'.($P('image_url')!==''&&!$img?' Fotoğraf linkten alınamadı; linkin doğrudan bir JPG, PNG ya da WEBP fotoğrafa gittiğinden emin olun.':'')); }
   if($a==='pedit'){ if($P('name')==='') back('Ürün adı boş olamaz.');
     $u=$P('shopier_url'); if($u!==''&&!preg_match('#^https://#',$u))$u='';
-    $img=saveImg($_FILES['image']??null);
+    $img=saveImg($_FILES['image']??null) ?? urlImg($P('image_url'));
     if($img){ $r=$db->prepare("SELECT image FROM products WHERE id=?");$r->execute([$id]);$old=$r->fetchColumn(); if($old)@unlink(__DIR__.'/uploads/'.basename($old));
       $db->prepare("UPDATE products SET image=? WHERE id=?")->execute([$img,$id]); }
     $db->prepare("UPDATE products SET name=?,category=?,price=?,description=?,shopier_url=? WHERE id=?")->execute([$P('name'),$P('category')?:'Genel',num($P('price')),$P('description'),$u,$id]);
-    back('Ürün güncellendi.'.(!empty($_FILES['image']['name'])&&!$img?' Fotoğraf yüklenemedi: JPG, PNG ya da WEBP olmalı.':'')); }
+    back('Ürün güncellendi.'.((!empty($_FILES['image']['name'])||$P('image_url')!=='')&&!$img?' Fotoğraf alınamadı: dosya ya da link JPG, PNG veya WEBP bir fotoğraf olmalı.':'')); }
   if($a==='ptog'){ $db->prepare("UPDATE products SET active=1-active WHERE id=?")->execute([$id]); back(); }
   if($a==='pdel'){ $r=$db->prepare("SELECT image FROM products WHERE id=?");$r->execute([$id]);$im=$r->fetchColumn(); if($im)@unlink(__DIR__.'/uploads/'.basename($im)); $db->prepare("DELETE FROM products WHERE id=?")->execute([$id]); back('Ürün silindi.'); }
 
@@ -382,7 +403,7 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 <?php else: /* ================= ÜRÜNLER (sitede görünenler) ================= */ ?>
 <form method="post" enctype="multipart/form-data" class="row"><?=$C?><input type="hidden" name="a" value="padd">
 <input name="name" placeholder="Ürün adı" required><input name="category" placeholder="Kategori"><input name="price" inputmode="decimal" placeholder="Fiyat (₺)" required>
-<input name="shopier_url" placeholder="Shopier ürün linki (https://...)"><input type="file" name="image" accept="image/jpeg,image/png,image/webp">
+<input name="shopier_url" placeholder="Shopier ürün linki (https://...)"><input type="file" name="image" accept="image/jpeg,image/png,image/webp"><input name="image_url" placeholder="ya da fotoğraf linki (https://...)">
 <textarea name="description" placeholder="Açıklama: ölçü, malzeme, kişiselleştirme seçenekleri (ürün sayfasında görünür)" rows="3"></textarea><button>Ürün ekle</button></form>
 <p class="hint">Yayındaki her ürünün kendi sayfası olur (örn. mikro3datolye.com.tr/urun/12-isimli-anahtarlik) ve Google'a otomatik bildirilir. Açıklamayı birkaç cümleyle, müşterinin arayacağı kelimelerle yazın.</p>
 <div class="x"><table><tr><th>Ürün</th><th>Fiyat</th><th>Durum</th><th></th></tr>
@@ -393,6 +414,7 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 <label class="lbl">Fiyat (₺)<input name="price" inputmode="decimal" value="<?=h($p['price']+0)?>"></label><label class="lbl full">Shopier ürün linki<input name="shopier_url" value="<?=h($p['shopier_url'])?>" placeholder="https://..."></label>
 <label class="lbl full">Açıklama<textarea name="description" rows="4"><?=h($p['description'])?></textarea></label>
 <label class="lbl full">Yeni fotoğraf (değiştirmek isterseniz)<input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
+<label class="lbl full">ya da fotoğraf linki<input name="image_url" placeholder="https://... (örn. Shopier'deki ürün fotoğrafı)"></label>
 <button>Kaydet</button></form></details>
 <form method="post"><?=$C?><input type="hidden" name="id" value="<?=$p['id']?>"><button class="alt" name="a" value="ptog"><?=$p['active']?'Gizle':'Yayınla'?></button>
 <button class="del" name="a" value="pdel" onclick="return confirm('Bu ürün silinsin mi?')">Sil</button></form></td></tr><?php endforeach; ?></table></div>
