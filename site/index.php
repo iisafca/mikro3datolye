@@ -17,6 +17,24 @@ $catImg = []; foreach($pics as $p) if(!isset($catImg[$p['category']])) $catImg[$
 $catNum = $db->query("SELECT category, COUNT(*) FROM products WHERE active=1 GROUP BY category")->fetchAll(PDO::FETCH_KEY_PAIR);
 $aboutPic = $pics[2] ?? $pics[0] ?? null;
 
+// --- SEO: başlık, açıklama, paylaşım görseli ve yapısal veri ---
+$seoTitle = 'Kişiye Özel 3D Baskı Hediyelik ve Dekorasyon | Mikro 3D Atölye';
+$seoDesc  = 'Butik 3D baskı atölyesi: isme özel ledli isimlikler, hediyelikler ve ev dekorasyonu. Fikrinizi WhatsApp\'tan yazın, birlikte ürüne dönüştürelim.';
+$seoImg   = $pics ? SITE.'/uploads/'.$pics[0]['image'] : '';
+$all = $c === '' ? $items : $db->query("SELECT * FROM products WHERE active=1 ORDER BY id DESC")->fetchAll();
+$ld = [
+  ['@context'=>'https://schema.org','@type'=>'OnlineStore','@id'=>SITE.'/#atolye','name'=>'Mikro 3D Atölye','url'=>SITE.'/',
+   'description'=>$seoDesc,'email'=>$mail,'telephone'=>'+905346668102',
+   'sameAs'=>[$ig,$shopier],
+   'contactPoint'=>['@type'=>'ContactPoint','contactType'=>'customer service','telephone'=>'+905346668102','email'=>$mail,'availableLanguage'=>'Turkish']]
+   + ($seoImg ? ['image'=>$seoImg] : []),
+  ['@context'=>'https://schema.org','@type'=>'WebSite','name'=>'Mikro 3D Atölye','alternateName'=>'mikro3datolye','url'=>SITE.'/','inLanguage'=>'tr','publisher'=>['@id'=>SITE.'/#atolye']],
+];
+if($all){
+  $li=[]; foreach($all as $i=>$p) $li[]=['@type'=>'ListItem','position'=>$i+1,'name'=>$p['name'],'url'=>SITE.urunUrl($p)];
+  $ld[]=['@context'=>'https://schema.org','@type'=>'ItemList','name'=>'Mikro 3D Atölye ürünleri','itemListElement'=>$li];
+}
+
 function ic($n){
   static $I = [
     'arrow'=>'<path d="M5 12h14M13 6l6 6-6 6"/>',
@@ -41,8 +59,8 @@ function ic($n){
   ];
   return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'.($I[$n]??'').'</svg>';
 }
-function pola($p,$cls='',$tag=''){
-  return '<a class="pola '.$cls.'" href="'.h(urunUrl($p)).'"><img src="uploads/'.h($p['image']).'" alt="'.h($p['name']).'" loading="lazy"><span class="cap"><span>'.h($p['name']).'</span>'.($tag!==''?'<span class="tag dark">'.$tag.'</span>':'').'</span></a>';
+function pola($p,$cls='',$tag='',$eager=false){
+  return '<a class="pola '.$cls.'" href="'.h(urunUrl($p)).'"><img src="uploads/'.h($p['image']).'" alt="'.h($p['name']).'" '.($eager?'fetchpriority="high"':'loading="lazy"').'><span class="cap"><span>'.h($p['name']).'</span>'.($tag!==''?'<span class="tag dark">'.$tag.'</span>':'').'</span></a>';
 }
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <script>
@@ -58,8 +76,14 @@ function loadAnalytics(){
   gtag('js', new Date()); gtag('config', 'G-DM8M8T5C9S');
 }
 </script>
-<title>Mikro 3D Atölye | Kişiye özel 3D baskı hediyelik ve ev dekorasyonu</title>
-<meta name="description" content="Kişiye özel hediyelikler, ledli isimlikler, özgün ev dekorasyonu ve günlük hayatı kolaylaştıran tasarımlar üreten butik 3D baskı atölyesi. Fikrinizi birlikte ürüne dönüştürelim.">
+<title><?= h($seoTitle) ?></title>
+<meta name="description" content="<?= h($seoDesc) ?>">
+<link rel="canonical" href="<?= SITE ?>/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Mikro 3D Atölye"><meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="<?= h($seoTitle) ?>"><meta property="og:description" content="<?= h($seoDesc) ?>"><meta property="og:url" content="<?= SITE ?>/">
+<?php if($seoImg): ?><meta property="og:image" content="<?= h($seoImg) ?>"><meta name="twitter:card" content="summary_large_image"><?php endif; ?>
+<script type="application/ld+json"><?= json_encode($ld,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP) ?></script>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#1b1931">
 <link rel="preload" href="barlow-condensed-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="site.css?v=7"></head><body>
@@ -81,7 +105,7 @@ function loadAnalytics(){
   </div>
   <?php if($pics): ?><div class="hero-art">
     <span class="float-badge"><span class="tag sun">Kişiye özel</span></span>
-    <?= pola($pics[0],'p'.(isset($pics[1])?'1':'2'),tl($pics[0]['price'])) ?>
+    <?= pola($pics[0],'p'.(isset($pics[1])?'1':'2'),tl($pics[0]['price']),true) ?>
     <?php if(isset($pics[1])) echo pola($pics[1],'p2',tl($pics[1]['price'])); ?>
   </div><?php endif; ?>
 </div></section>

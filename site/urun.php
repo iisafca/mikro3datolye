@@ -16,6 +16,10 @@ if($p){
        'brand'=>['@type'=>'Brand','name'=>'Mikro 3D Atölye'],
        'offers'=>['@type'=>'Offer','price'=>number_format((float)$p['price'],2,'.',''),'priceCurrency'=>'TRY','availability'=>'https://schema.org/InStock','url'=>SITE.$url]];
   if($img) $ld['image']=[$img];
+  $ldCrumb=['@context'=>'https://schema.org','@type'=>'BreadcrumbList','itemListElement'=>[
+    ['@type'=>'ListItem','position'=>1,'name'=>'Ana sayfa','item'=>SITE.'/'],
+    ['@type'=>'ListItem','position'=>2,'name'=>$p['category'],'item'=>SITE.'/?k='.rawurlencode($p['category'])],
+    ['@type'=>'ListItem','position'=>3,'name'=>$p['name']]]];
 } else {
   http_response_code(404); $title='Ürün bulunamadı | Mikro 3D Atölye'; $desc='';
 }
@@ -41,8 +45,10 @@ function loadAnalytics(){
 <?php if($img): ?><meta property="og:image" content="<?= h($img) ?>"><meta name="twitter:card" content="summary_large_image"><?php endif; ?>
 <meta property="product:price:amount" content="<?= h(number_format((float)$p['price'],2,'.','')) ?>"><meta property="product:price:currency" content="TRY">
 <script type="application/ld+json"><?= json_encode($ld,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP) ?></script>
+<script type="application/ld+json"><?= json_encode($ldCrumb,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP) ?></script>
 <?php else: ?><meta name="robots" content="noindex"><?php endif; ?>
 <meta name="theme-color" content="#1b1931">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/barlow-condensed-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/site.css?v=7"></head><body>
 
@@ -56,7 +62,7 @@ function loadAnalytics(){
 <?php if($p): ?>
   <nav class="crumbs" aria-label="Bulunduğunuz yer"><a href="/">Ana sayfa</a> / <a href="/#urunler">Ürünler</a> / <a href="/?k=<?= urlencode($p['category']) ?>#urunler"><?= h($p['category']) ?></a></nav>
   <div class="pd-grid">
-    <div class="pic pd-pic"><?php if($p['image']): ?><img src="/uploads/<?= h($p['image']) ?>" alt="<?= h($p['name']) ?>"><?php else: ?><span class="ph" aria-hidden="true"></span><?php endif; ?></div>
+    <div class="pic pd-pic"><?php if($p['image']): ?><img src="/uploads/<?= h($p['image']) ?>" alt="<?= h($p['name']) ?>" fetchpriority="high"><?php else: ?><span class="ph" aria-hidden="true"></span><?php endif; ?></div>
     <div class="pd-info">
       <span class="cat"><?= h($p['category']) ?></span>
       <h1><?= h($p['name']) ?></h1>
