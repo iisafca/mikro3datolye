@@ -19,13 +19,14 @@ $aboutPic = $pics[2] ?? $pics[0] ?? null;
 
 // --- SEO: başlık, açıklama, paylaşım görseli ve yapısal veri ---
 $seoTitle = 'Kişiye Özel 3D Baskı Hediyelik ve Dekorasyon | Mikro 3D Atölye';
-$seoDesc  = 'Butik 3D baskı atölyesi: isme özel ledli isimlikler, hediyelikler ve ev dekorasyonu. Fikrinizi WhatsApp\'tan yazın, birlikte ürüne dönüştürelim.';
+$seoDesc  = 'Bursa\'da butik 3D baskı atölyesi: isme özel ledli isimlikler, hediyelikler ve ev dekorasyonu. Fikrinizi WhatsApp\'tan yazın, birlikte üretelim.';
 $seoImg   = $pics ? SITE.'/uploads/'.$pics[0]['image'] : '';
 $all = $c === '' ? $items : $db->query("SELECT * FROM products WHERE active=1 ORDER BY id DESC")->fetchAll();
 $ld = [
   ['@context'=>'https://schema.org','@type'=>'OnlineStore','@id'=>SITE.'/#atolye','name'=>'Mikro 3D Atölye','url'=>SITE.'/',
    'description'=>$seoDesc,'email'=>$mail,'telephone'=>'+905346668102',
    'sameAs'=>[$ig,$shopier],
+   'address'=>['@type'=>'PostalAddress','addressLocality'=>'Bursa','addressCountry'=>'TR'],
    'contactPoint'=>['@type'=>'ContactPoint','contactType'=>'customer service','telephone'=>'+905346668102','email'=>$mail,'availableLanguage'=>'Turkish']]
    + ($seoImg ? ['image'=>$seoImg] : []),
   ['@context'=>'https://schema.org','@type'=>'WebSite','name'=>'Mikro 3D Atölye','alternateName'=>'mikro3datolye','url'=>SITE.'/','inLanguage'=>'tr','publisher'=>['@id'=>SITE.'/#atolye']],
@@ -97,7 +98,7 @@ function loadAnalytics(){
 <main>
 <section class="hero torn-b"><div class="wrap">
   <div class="hero-txt">
-    <div class="hero-kick"><span class="pill"><?= ic('star') ?>Butik 3D baskı atölyesi</span><span class="eyebrow">Fikirden ürüne</span></div>
+    <div class="hero-kick"><span class="pill"><?= ic('star') ?>Bursa'da butik 3D baskı atölyesi</span><span class="eyebrow">Fikirden ürüne</span></div>
     <h1>Bir fikirle başlar,<br> <span class="hl">3D baskıyla</span><br> gerçeğe dönüşür.</h1>
     <p class="sub">Kişiye özel hediyelikler, özgün ev dekorasyonu ve günlük hayatı kolaylaştıran tasarımlar üreten butik bir 3D baskı atölyesi. Fikrinizi birlikte ürüne dönüştürelim.</p>
     <div class="acts"><a class="btn berry" href="#urunler">Ürünlere bak <?= ic('arrow') ?></a><a class="btn dark" href="#ozel"><?= ic('pen') ?>Özel tasarım iste</a></div>
@@ -113,7 +114,7 @@ function loadAnalytics(){
 <div class="marquee" aria-hidden="true"><div class="track"><?php for($r=0;$r<2;$r++): foreach([['tag','İsme özel tasarım'],['bulb','Ledli isimlik'],['drop','Renk sizden'],['printer','Atölyede basılır'],['layers','PLA • PETG • TPU']] as [$i,$w]): ?><span><?= ic($i) ?><?= h($w) ?></span><i>•</i><?php endforeach; endfor; ?></div></div>
 
 <section class="sec about" id="atolye"><div class="wrap">
-  <div class="sec-head center"><span class="eyebrow">Hakkımızda</span><h2>Her ürün, bir fikirden doğar</h2><p class="lead">Mikro 3D Atölye butik bir atölye. Ürünleri FDM yöntemiyle, Creality Ender 3 V3 CoreXZ yazıcıda basıyoruz. Hazır modelleri ihtiyacınıza göre uyarlıyor, gerektiğinde yeni tasarımlar hazırlıyoruz.</p></div>
+  <div class="sec-head center"><span class="eyebrow">Hakkımızda</span><h2>Her ürün, bir fikirden doğar</h2><p class="lead">Mikro 3D Atölye, Bursa'da butik bir 3D baskı atölyesi. Ürünleri FDM yöntemiyle, Creality Ender 3 V3 CoreXZ yazıcıda basıyoruz. Hazır modelleri ihtiyacınıza göre uyarlıyor, gerektiğinde yeni tasarımlar hazırlıyoruz.</p></div>
   <div class="about-grid">
     <div class="about-col">
       <article class="feat"><span class="ib b-sun"><?= ic('gift') ?></span><h3 class="c-sun">Kişiye özel hediyelikler</h3><p>İsimli objeler, bebek ve çocuk odası süsleri, masa süsleri ve özel günler için hediyelikler.</p></article>
@@ -165,7 +166,7 @@ function loadAnalytics(){
   <ol>
     <li><span class="n" style="color:var(--sun)" aria-hidden="true">1</span><span class="tag sun">Adım 01</span><h3>Fikrinizi anlatın</h3><p>WhatsApp'tan fotoğraf, ölçü ya da sadece fikrinizi yazın. Hazır 3D modeliniz olması gerekmiyor.</p></li>
     <li><span class="n" style="color:var(--cyan)" aria-hidden="true">2</span><span class="tag cyan">Adım 02</span><h3>Birlikte netleştirelim</h3><p>Ürünün uygunluğuna, malzemeye ve rengine birlikte karar veririz. Fiyat ve ayrıntıları da burada konuşuruz.</p></li>
-    <li><span class="n" style="color:var(--pink)" aria-hidden="true">3</span><span class="tag berry">Adım 03</span><h3>Atölyede basılsın</h3><p>Onayınızdan sonra ürün atölyede basılır. Teslimat ayrıntılarını birlikte netleştiririz.</p></li>
+    <li><span class="n" style="color:var(--pink)" aria-hidden="true">3</span><span class="tag berry">Adım 03</span><h3>Atölyede basılsın</h3><p>Onayınızdan sonra ürün atölyede basılır. Üretim genellikle 2-3 iş günü sürer; teslimat ayrıntılarını birlikte netleştiririz.</p></li>
   </ol>
   <div class="strip"><div><?= ic('chat') ?><div><h3>Fiyat bilgisi alın</h3><p>Fikrinizi, fotoğrafınızı ya da ölçünüzü gönderin; fiyat ve ayrıntıları size iletelim.</p></div></div><a class="btn" href="<?= h($waMsg) ?>" rel="noopener"><?= ic('chat') ?>WhatsApp'tan yaz</a></div>
 </div></section>
@@ -212,6 +213,7 @@ function loadAnalytics(){
     <details><summary>Hangi renkler var?</summary><p>Renk seçenekleri atölyedeki güncel filament stoğuna göre değişir. Hangi renklerin hazır olduğunu sormanız yeterli.</p></details>
     <details><summary>Hangi malzemeleri kullanıyorsunuz?</summary><p>Malzeme ürünün kullanım amacına göre seçilir: PLA, PLA+, PETG, TPU ya da ABS ve benzeri teknik filamentler.</p></details>
     <details><summary>Aklımda sadece bir fikir var, 3D modelim yok. Olur mu?</summary><p>Olur. Fotoğraf, ölçü ya da sadece fikrinizi paylaşın. Uygun projelerde mevcut modelleri uyarlıyor, basit tasarımlar hazırlıyoruz.</p></details>
+    <details><summary>Siparişim ne kadar sürede hazır olur?</summary><p>Üretim genellikle 2-3 iş günü sürer, çoğu zaman daha kısa. Toplu siparişlerde süre uzayabilir. Kargo süresi buna dahil değildir.</p></details>
     <details><summary>Kargo ücreti ne kadar?</summary><p>Shopier mağazamızdan verilen siparişlerde kargo ücreti 100 ₺'dir; 2.000 ₺ ve üzeri siparişlerde kargo ücretsizdir. Özel siparişlerde teslimat ayrıntılarını birlikte netleştiririz.</p></details>
     <details><summary>Toplu sipariş alıyor musunuz?</summary><p>Evet. Toplu alımlarda fiyat için WhatsApp ya da e-posta ile yazabilirsiniz.</p></details>
   </div>
@@ -228,7 +230,7 @@ function loadAnalytics(){
     <div><h3>Mağazalar</h3><ul><li><a href="<?= $shopier ?>" rel="noopener">Shopier</a></li><li><a href="<?= $dolap ?>" rel="noopener">Dolap</a></li></ul></div>
   </div>
   <p class="wordmark" aria-hidden="true">MİKRO3D</p>
-  <p class="copy"><span>© <?= date('Y') ?> Mikro 3D Atölye</span><span><button type="button" class="linkbtn" id="consent-open">Çerez tercihi</button> · <a href="gizlilik.php">Gizlilik ve çerezler</a></span></p>
+  <p class="copy"><span>© <?= date('Y') ?> Mikro 3D Atölye · Bursa</span><span><button type="button" class="linkbtn" id="consent-open">Çerez tercihi</button> · <a href="gizlilik.php">Gizlilik ve çerezler</a></span></p>
 </div></footer>
 
 <a class="wa-fab" href="<?= h($waMsg) ?>" rel="noopener" aria-label="WhatsApp'tan yaz"><?= ic('chat') ?></a>

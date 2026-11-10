@@ -76,7 +76,7 @@ function loadAnalytics(){
       <ul class="pd-notes">
         <li style="--c:var(--coral)">Ürüne uygunsa isim, renk ve ölçüyü siz seçersiniz. Ayrıntılar için WhatsApp'tan yazın.</li>
         <li style="--c:var(--cyan)">Renk seçenekleri atölyedeki güncel filament stoğuna göre değişir.</li>
-        <li style="--c:var(--lime)">Ürünler atölyemizde 3D baskıyla üretilir.</li>
+        <li style="--c:var(--lime)">Ürünler Bursa'daki atölyemizde 3D baskıyla üretilir. Üretim genellikle 2-3 iş günü sürer; toplu siparişlerde uzayabilir.</li>
       </ul>
     </div>
   </div>
