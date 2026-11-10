@@ -94,20 +94,25 @@ function ek_dump($db){
   }
   return $o."SET FOREIGN_KEY_CHECKS=1;\n";
 }
-function ek_mail_backup($db,$to){
-  if(!function_exists('mail')) return false;
+function ek_mail_backup($db,$to,&$why=''){
+  if(!function_exists('mail')){ $why='sunucuda mail() işlevi kapalı'; return false; }
   $sql=ek_dump($db); $gz=function_exists('gzencode'); $data=$gz?gzencode($sql,9):$sql; $fn='mikro3d-yedek-'.date('Y-m-d').($gz?'.sql.gz':'.sql');
   $b='m3d'.bin2hex(random_bytes(8)); $from=YEDEK_MAIL;
   $h="From: Atolye Paneli <$from>\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed; boundary=\"$b\"";
   $body="--$b\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\nAtölye panelinin otomatik yedeği ektedir (".date('d.m.Y H:i').").\r\nGeri yükleme: cPanel > phpMyAdmin > veritabanını seçin > İçe aktar.\r\n\r\n"
        ."--$b\r\nContent-Type: application/octet-stream; name=\"$fn\"\r\nContent-Transfer-Encoding: base64\r\nContent-Disposition: attachment; filename=\"$fn\"\r\n\r\n".chunk_split(base64_encode($data))."--$b--\r\n";
-  return (bool)@mail($to,'=?UTF-8?B?'.base64_encode('Atölye paneli yedeği '.date('d.m.Y')).'?=',$body,$h);
+  $sub='=?UTF-8?B?'.base64_encode('Atölye paneli yedeği '.date('d.m.Y')).'?=';
+  error_clear_last(); $ok=@mail($to,$sub,$body,$h,'-f'.$from);
+  if(!$ok){ error_clear_last(); $ok=@mail($to,$sub,$body,$h); }
+  if(!$ok){ $e=error_get_last(); $why=$e ? substr((string)$e['message'],0,150) : 'mail() gönderimi reddetti'; }
+  return (bool)$ok;
 }
 function ek_backup_run($db,$to){
-  try{ $ok=ek_mail_backup($db,$to); }catch(Throwable $e){ $ok=false; }
+  $why='';
+  try{ $ok=ek_mail_backup($db,$to,$why); }catch(Throwable $e){ $ok=false; $why=substr($e->getMessage(),0,150); }
   $st=$db->prepare("REPLACE INTO settings(k,v) VALUES(?,?)");
   $st->execute(['auto_backup_try',(string)($ok?time():time()-6*86400)]);   // başarısızsa ertesi gün yeniden dener
-  $st->execute(['auto_backup_res',($ok?'ok ':'hata ').date('d.m.Y H:i')]);
+  $st->execute(['auto_backup_res',($ok?'başarılı ':'hata ').date('d.m.Y H:i').(($ok||$why==='')?'':' ('.$why.')')]);
   return $ok;
 }
 function ek_auto_backup($db,$S){
