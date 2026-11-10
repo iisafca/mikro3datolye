@@ -1,4 +1,8 @@
-Options -Indexes
+Options -Indexes -MultiViews
 RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Ürün sayfaları: /urun/12-isimli-anahtarlik -> urun.php?id=12
+RewriteRule ^urun/([0-9]+)(-[^/]*)?/?$ urun.php?id=$1 [L,QSA]
+# Site haritası ürünlerle birlikte otomatik oluşur
+RewriteRule ^sitemap\.xml$ sitemap.php [L]

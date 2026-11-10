@@ -1,5 +1,5 @@
-<?php require 'config.php';
-$wa     = 'https://wa.me/905346668102';
+<?php require 'config.php'; require 'urun-ortak.php';
+$wa     = WA;
 $waMsg  = $wa . '?text=' . rawurlencode('Merhaba, kişiye özel bir ürün hakkında bilgi almak istiyorum.');
 $ig     = 'https://www.instagram.com/mikro3datolye';
 $shopier= 'https://www.shopier.com/mikro3datolye';
@@ -35,7 +35,7 @@ function loadAnalytics(){
 <meta name="description" content="Kişiye özel hediyelikler, özgün ev dekorasyonu ve günlük hayatı kolaylaştıran tasarımlar üreten butik 3D baskı atölyesi. Fikrinizi birlikte ürüne dönüştürelim.">
 <meta name="theme-color" content="#2a1f5c">
 <link rel="preload" href="unbounded-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="site.css?v=4"></head><body>
+<link rel="stylesheet" href="site.css?v=5"></head><body>
 
 <header class="top"><div class="wrap">
   <a class="logo" href="./" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>mikro3d atölye</a>
@@ -101,14 +101,7 @@ function loadAnalytics(){
   <p class="stores">Mevcut ürünler için mağazalarımıza da bakabilirsiniz: <a href="<?= $shopier ?>" rel="noopener">Shopier</a> ve <a href="<?= $dolap ?>" rel="noopener">Dolap</a>.</p>
   <?php if(!$items): ?><div class="empty"><b>Ürünler yakında burada.</b><p>Şimdilik Shopier ve Dolap mağazalarımıza göz atabilir ya da aklınızdaki ürünü bize yazabilirsiniz.</p>
     <div class="acts"><a class="btn" href="<?= $shopier ?>" rel="noopener">Shopier mağazası</a><a class="btn ghost" href="<?= $dolap ?>" rel="noopener">Dolap mağazası</a><a class="btn ghost" href="<?= h($waMsg) ?>" rel="noopener">WhatsApp'tan yaz</a></div></div><?php endif; ?>
-  <div class="grid"><?php foreach($items as $p): $pm = $wa.'?text='.rawurlencode('Merhaba, "'.$p['name'].'" ürünü hakkında bilgi almak istiyorum.'); ?><article class="card">
-    <div class="pic"><?php if($p['image']): ?><img src="uploads/<?= h($p['image']) ?>" alt="<?= h($p['name']) ?>" loading="lazy"><?php else: ?><span class="ph" aria-hidden="true"></span><?php endif; ?></div>
-    <div class="in"><span class="cat"><?= h($p['category']) ?></span><h3><?= h($p['name']) ?></h3>
-    <?php if($p['description']): ?><p><?= h($p['description']) ?></p><?php endif; ?>
-    <div class="buy"><span class="price"><?= tl($p['price']) ?></span>
-    <?php if($p['shopier_url']): ?><a class="btn sm" href="<?= h($p['shopier_url']) ?>" rel="noopener">Satın al</a><?php endif; ?></div>
-    <a class="more" href="<?= h($pm) ?>" rel="noopener">Renk ve kişiselleştirme için yazın</a></div>
-  </article><?php endforeach; ?></div>
+  <div class="grid"><?php foreach($items as $p) echo urunKart($p); ?></div>
 </div></section>
 
 <section class="insta" id="instagram"><div class="wrap">
