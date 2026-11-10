@@ -42,13 +42,14 @@ function loadAnalytics(){
 <meta property="product:price:amount" content="<?= h(number_format((float)$p['price'],2,'.','')) ?>"><meta property="product:price:currency" content="TRY">
 <script type="application/ld+json"><?= json_encode($ld,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP) ?></script>
 <?php else: ?><meta name="robots" content="noindex"><?php endif; ?>
-<meta name="theme-color" content="#1d1b33">
-<link rel="preload" href="/unbounded-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/site.css?v=6"></head><body>
+<meta name="theme-color" content="#1b1931">
+<link rel="preload" href="/barlow-condensed-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/site.css?v=7"></head><body>
 
 <header class="top"><div class="wrap">
-  <a class="logo" href="/" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>mikro3d atölye</a>
-  <nav aria-label="Ana menü"><a href="/#urunler">Ürünler</a><a href="/#ozel">Özel sipariş</a><a href="/#atolye">Atölye</a><a class="btn sm" href="<?= h($waMsg) ?>" rel="noopener">WhatsApp'tan yaz</a></nav>
+  <a class="logo" href="/" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span><span><b>Mikro 3D Atölye</b><small>Kişiye özel 3D baskı</small></span></a>
+  <nav id="menu" aria-label="Ana menü"><a href="/">Ana sayfa</a><a href="/#urunler">Ürünler</a><a href="/#ozel">Özel sipariş</a><a href="/#atolye">Atölye</a><a href="/#sss">SSS</a><a href="/#iletisim">İletişim</a><a class="btn sm" href="<?= h($waMsg) ?>" rel="noopener">WhatsApp'tan yaz</a></nav>
+  <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Menüyü aç" onclick="var t=this.parentNode.parentNode,o=t.classList.toggle('open');this.setAttribute('aria-expanded',o?'true':'false')"><span></span><span></span><span></span></button>
 </div></header>
 
 <main class="pd"><div class="wrap">

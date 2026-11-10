@@ -22,8 +22,8 @@ function loadAnalytics(){
 </script>
 <title>Gizlilik ve Çerez Politikası | Mikro 3D Atölye</title>
 <meta name="description" content="Mikro 3D Atölye web sitesinde hangi kişisel verilerin ve çerezlerin hangi amaçla kullanıldığı, KVKK kapsamındaki haklarınız ve tercihlerinizi nasıl değiştirebileceğiniz.">
-<meta name="theme-color" content="#1d1b33">
-<link rel="stylesheet" href="site.css?v=6">
+<meta name="theme-color" content="#1b1931">
+<link rel="stylesheet" href="site.css?v=7">
 <style>
 .legal{background:var(--paper);padding:56px 0 80px}
 .legal .wrap{max-width:820px}
@@ -46,10 +46,10 @@ function loadAnalytics(){
 .legal .pref{margin-top:16px;cursor:pointer;font-family:inherit}
 .back{display:inline-block;margin-top:44px;font-weight:700}
 </style>
-</head><body>
+</head><body class="noburger">
 
 <header class="top"><div class="wrap">
-  <a class="logo" href="./" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>mikro3d atölye</a>
+  <a class="logo" href="./" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span><span><b>Mikro 3D Atölye</b><small>Kişiye özel 3D baskı</small></span></a>
   <nav aria-label="Ana menü"><a href="./#urunler">Ürünler</a><a href="./#ozel">Özel sipariş</a><a href="./#atolye">Atölye</a></nav>
 </div></header>
 
