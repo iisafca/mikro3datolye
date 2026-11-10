@@ -9,6 +9,8 @@ $cats = $db->query("SELECT DISTINCT category FROM products WHERE active=1 ORDER 
 $c = $_GET['k'] ?? '';
 $st = $c !== '' ? $db->prepare("SELECT * FROM products WHERE active=1 AND category=? ORDER BY id DESC") : $db->prepare("SELECT * FROM products WHERE active=1 AND ?='' ORDER BY id DESC");
 $st->execute([$c]); $items = $st->fetchAll();
+// Giriş bölümünde gösterilen ürün: fotoğrafı olan en yeni ürün
+$feat = $db->query("SELECT * FROM products WHERE active=1 AND image IS NOT NULL AND image<>'' ORDER BY id DESC LIMIT 1")->fetch();
 $spools = ['#ff4f7b','#b8e43a','#29c4e0','#ffc531','#2a1f5c','#ffffff'];
 $areas = [
   ['Kişiye özel hediyelikler','İsimli objeler, masa süsleri, hatıra ürünleri ve küçük hediye şişeleri için isimlikler.','--c:var(--coral)'],
@@ -20,6 +22,7 @@ $areas = [
 ];
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <script>
+document.documentElement.className='js';
 /* Analiz çerezleri yalnızca ziyaretçi kabul ederse yüklenir. */
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
@@ -33,35 +36,34 @@ function loadAnalytics(){
 </script>
 <title>Mikro 3D Atölye | Kişiye özel 3D baskı hediyelik ve ev dekorasyonu</title>
 <meta name="description" content="Kişiye özel hediyelikler, özgün ev dekorasyonu ve günlük hayatı kolaylaştıran tasarımlar üreten butik 3D baskı atölyesi. Fikrinizi birlikte ürüne dönüştürelim.">
-<meta name="theme-color" content="#2a1f5c">
+<meta name="theme-color" content="#1d1b33">
 <link rel="preload" href="unbounded-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="site.css?v=5"></head><body>
+<link rel="stylesheet" href="site.css?v=6"></head><body>
 
 <header class="top"><div class="wrap">
   <a class="logo" href="./" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>mikro3d atölye</a>
   <nav aria-label="Ana menü"><a href="#urunler">Ürünler</a><a href="#ozel">Özel sipariş</a><a href="#atolye">Atölye</a><a class="btn sm" href="<?= h($waMsg) ?>" rel="noopener">WhatsApp'tan yaz</a></nav>
 </div></header>
 
-<section class="hero"><div class="wrap">
-  <h1 class="print"><span class="txt">Bir fikirle başlar, 3D baskıyla gerçeğe dönüşür.</span><span class="nozzle" aria-hidden="true"></span></h1>
-  <div class="hero-foot">
+<section class="hero<?= $feat ? '' : ' solo' ?>"><div class="wrap">
+  <div class="hero-txt">
+    <p class="eyebrow">Kişiye özel 3D baskı</p>
+    <h1>Bir fikirle başlar, 3D baskıyla gerçeğe dönüşür.</h1>
     <p>Mikro 3D Atölye; kişiye özel hediyelikler, özgün ev dekorasyonu ve günlük hayatı kolaylaştıran tasarımlar üreten butik bir 3D baskı atölyesi.</p>
     <div class="acts"><a class="btn" href="#urunler">Ürünlere bak</a><a class="btn ghost" href="<?= h($waMsg) ?>" rel="noopener">Özel sipariş için yaz</a></div>
   </div>
+  <?php if($feat): ?><a class="hero-pic" href="<?= h(urunUrl($feat)) ?>"><img src="uploads/<?= h($feat['image']) ?>" alt="<?= h($feat['name']) ?>"><span class="tag"><?= h($feat['name']) ?> <small><?= tl($feat['price']) ?></small></span></a><?php endif; ?>
 </div></section>
 
-<section class="lanes">
-  <div class="lane home"><div class="in">
-    <h2>Sevdiklerinize özel</h2>
-    <p>İsimli objeler, masa süsleri ve özel günler için hediyelikler. Ürüne uygunsa isim, renk ve ölçüyü siz seçersiniz.</p>
-    <a class="btn light" href="#urunler">Hediyelikleri gör</a>
-  </div></div>
-  <div class="lane biz"><div class="in">
-    <h2>Yaşam alanınıza farklı</h2>
-    <p>Vazolar, figürler, geometrik lamba gövdeleri ve raf süsleri. Evinize ya da masanıza özgün bir parça ekleyin.</p>
-    <a class="btn" href="#urunler">Dekorasyonu gör</a>
-  </div></div>
-</section>
+<section class="shop" id="urunler"><div class="wrap">
+  <div class="shop-head"><h2>Ürünler</h2>
+  <?php if($cats): ?><nav class="cats" aria-label="Kategoriler"><a href="./#urunler"<?= $c===''?' aria-current="page"':'' ?>>Tümü</a><?php foreach($cats as $k): ?><a href="?k=<?= urlencode($k) ?>#urunler"<?= $c===$k?' aria-current="page"':'' ?>><?= h($k) ?></a><?php endforeach; ?></nav><?php endif; ?>
+  </div>
+  <p class="stores">Mevcut ürünler için mağazalarımıza da bakabilirsiniz: <a href="<?= $shopier ?>" rel="noopener">Shopier</a> ve <a href="<?= $dolap ?>" rel="noopener">Dolap</a>.</p>
+  <?php if(!$items): ?><div class="empty"><b>Ürünler yakında burada.</b><p>Şimdilik Shopier ve Dolap mağazalarımıza göz atabilir ya da aklınızdaki ürünü bize yazabilirsiniz.</p>
+    <div class="acts"><a class="btn" href="<?= $shopier ?>" rel="noopener">Shopier mağazası</a><a class="btn ghost" href="<?= $dolap ?>" rel="noopener">Dolap mağazası</a><a class="btn ghost" href="<?= h($waMsg) ?>" rel="noopener">WhatsApp'tan yaz</a></div></div><?php endif; ?>
+  <div class="grid"><?php foreach($items as $p) echo urunKart($p); ?></div>
+</div></section>
 
 <section class="areas"><div class="wrap">
   <h2>Neler üretiyoruz?</h2>
@@ -92,16 +94,6 @@ function loadAnalytics(){
     <li><span class="n" aria-hidden="true">2</span><b>Birlikte netleştirelim</b><p>Ürünün uygunluğuna, malzemeye ve rengine birlikte karar veririz. Fiyat ve ayrıntıları da burada konuşuruz.</p></li>
     <li><span class="n" aria-hidden="true">3</span><b>Atölyede basılsın</b><p>Onayınızdan sonra ürün atölyede basılır. Teslimat ayrıntılarını birlikte netleştiririz.</p></li>
   </ol>
-</div></section>
-
-<section class="shop" id="urunler"><div class="wrap">
-  <div class="shop-head"><h2>Ürünler</h2>
-  <?php if($cats): ?><nav class="cats" aria-label="Kategoriler"><a href="./#urunler"<?= $c===''?' aria-current="page"':'' ?>>Tümü</a><?php foreach($cats as $k): ?><a href="?k=<?= urlencode($k) ?>#urunler"<?= $c===$k?' aria-current="page"':'' ?>><?= h($k) ?></a><?php endforeach; ?></nav><?php endif; ?>
-  </div>
-  <p class="stores">Mevcut ürünler için mağazalarımıza da bakabilirsiniz: <a href="<?= $shopier ?>" rel="noopener">Shopier</a> ve <a href="<?= $dolap ?>" rel="noopener">Dolap</a>.</p>
-  <?php if(!$items): ?><div class="empty"><b>Ürünler yakında burada.</b><p>Şimdilik Shopier ve Dolap mağazalarımıza göz atabilir ya da aklınızdaki ürünü bize yazabilirsiniz.</p>
-    <div class="acts"><a class="btn" href="<?= $shopier ?>" rel="noopener">Shopier mağazası</a><a class="btn ghost" href="<?= $dolap ?>" rel="noopener">Dolap mağazası</a><a class="btn ghost" href="<?= h($waMsg) ?>" rel="noopener">WhatsApp'tan yaz</a></div></div><?php endif; ?>
-  <div class="grid"><?php foreach($items as $p) echo urunKart($p); ?></div>
 </div></section>
 
 <section class="insta" id="instagram"><div class="wrap">
@@ -173,6 +165,19 @@ function loadAnalytics(){
   }
   document.getElementById('insta-show').onclick=function(){ set('evet'); show(); };
   if(get()==='evet') show();
+})();
+</script>
+<script>
+/* Bölümler kaydırırken yumuşakça belirir. Hareket azaltma tercihi açıksa ya da tarayıcı desteklemiyorsa her şey doğrudan görünür. */
+(function(){
+  if(!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var els=document.querySelectorAll('section:not(.hero) h2, .stores, .card, .empty, .area-grid article, .custom .lead, .custom dl div, .spools, .steps li, .insta .lead, .insta-gate, .about-cols > *');
+  var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }); },{rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(el){
+    var i=Array.prototype.indexOf.call(el.parentNode.children,el);
+    if(el.matches('.card, .area-grid article, .steps li, .custom dl div')) el.style.transitionDelay=Math.min(i,5)*70+'ms';
+    el.classList.add('rv'); io.observe(el);
+  });
 })();
 </script>
 </body></html>

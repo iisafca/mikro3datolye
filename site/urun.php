@@ -42,9 +42,9 @@ function loadAnalytics(){
 <meta property="product:price:amount" content="<?= h(number_format((float)$p['price'],2,'.','')) ?>"><meta property="product:price:currency" content="TRY">
 <script type="application/ld+json"><?= json_encode($ld,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP) ?></script>
 <?php else: ?><meta name="robots" content="noindex"><?php endif; ?>
-<meta name="theme-color" content="#2a1f5c">
+<meta name="theme-color" content="#1d1b33">
 <link rel="preload" href="/unbounded-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/site.css?v=5"></head><body>
+<link rel="stylesheet" href="/site.css?v=6"></head><body>
 
 <header class="top"><div class="wrap">
   <a class="logo" href="/" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>mikro3d atölye</a>

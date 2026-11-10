@@ -22,8 +22,8 @@ function loadAnalytics(){
 </script>
 <title>Gizlilik ve Çerez Politikası | Mikro 3D Atölye</title>
 <meta name="description" content="Mikro 3D Atölye web sitesinde hangi kişisel verilerin ve çerezlerin hangi amaçla kullanıldığı, KVKK kapsamındaki haklarınız ve tercihlerinizi nasıl değiştirebileceğiniz.">
-<meta name="theme-color" content="#2a1f5c">
-<link rel="stylesheet" href="site.css?v=4">
+<meta name="theme-color" content="#1d1b33">
+<link rel="stylesheet" href="site.css?v=6">
 <style>
 .legal{background:var(--paper);padding:56px 0 80px}
 .legal .wrap{max-width:820px}
