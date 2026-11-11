@@ -100,6 +100,7 @@ td.act{white-space:nowrap}td.act form{margin:0}
 /* Şablonlar ve Baskılar: ortak form düzeni, satır düzenleyici, maliyet şeridi ve kartlar */
 form.row.f4,details.ed>form.row.f4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .s2{grid-column:span 2}
+form.row.f4>button{justify-self:start;white-space:nowrap}
 .sec{grid-column:1/-1;display:flex;align-items:center;gap:12px;margin:8px 0 0;font:800 1.1rem/1 var(--disp);letter-spacing:.06em;text-transform:uppercase;color:var(--cream)}
 .sec::after{content:"";flex:1;height:1px;background:var(--line)}
 .rows{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
@@ -115,7 +116,7 @@ button.rx{width:34px;height:34px;padding:0;background:none;box-shadow:none;borde
 button.rx:hover{transform:none;box-shadow:none;color:var(--warn);border-color:var(--warn)}
 button.radd{align-self:flex-start}
 .sum{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.sum>div{flex:1 1 112px;min-width:0;background:var(--bg);padding:9px 12px}
+.sum>div{flex:1 1 90px;min-width:0;background:var(--bg);padding:9px 12px}
 .sum small{display:block;color:var(--mut);font-size:.74rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sum b{display:block;font:800 1.3rem/1.2 var(--disp);letter-spacing:.01em;white-space:nowrap}
 .sum b small{display:inline;font:400 .8rem/1.2 "Plus Jakarta Sans",sans-serif}
@@ -150,6 +151,7 @@ button.radd{align-self:flex-start}
   .cards b{font-size:1.4rem}
   form.row.f4,details.ed>form.row.f4{grid-template-columns:1fr 1fr}
   .s2{grid-column:1/-1}
+  form.row.f4>button{grid-column:1/-1;justify-self:stretch}
   .rh{display:none}
   .rw{align-items:end;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
   .rw .cl{position:static;width:auto;height:auto;clip-path:none;display:block;margin-bottom:4px;font-size:.76rem;font-weight:600;color:var(--mut)}

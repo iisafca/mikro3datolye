@@ -309,7 +309,7 @@ function ek_sale_fields($s){
     .'<label class="lbl">Teslim tarihi<input type="date" name="due_on" value="'.h((string)($s['due_on']??'')).'"></label>'
     .'<label class="lbl">Ödeme<select name="paid">';
   foreach(PAID as $k=>$v) $o.='<option value="'.$k.'"'.($pd===$k?' selected':'').'>'.$v.'</option>';
-  $dep=(isset($s['deposit']) && $s['deposit']>0) ? (string)($s['deposit']+0) : '';
+  $dep=(isset($s['deposit']) && $s['deposit']>0) ? ek_n($s['deposit']) : '';
   return $o.'</select></label><label class="lbl">Alınan kapora (₺)<input name="deposit" inputmode="decimal" value="'.h($dep).'" placeholder="0"></label>';
 }
 function ek_sale_info($s){
@@ -438,6 +438,8 @@ function ek_sum($items){
   return $o.'</div>';
 }
 function ek_kar($k){ return $k<0?'neg':'pos'; }
+// Form alanlarında sayıyı virgüllü yazar: 0.5 -> 0,5
+function ek_n($v){ return str_replace('.',',',(string)((float)$v+0)); }
 function ek_pow($pc,$h,$watt,$kwh){ return ['Elektrik'.($h>0?' · '.q($h).' sa':''),($watt&&$kwh)?tl($pc):'<small>ayar yok</small>']; }
 // Satır düzenleyici: sütun başlıkları + satırlar + yeni satır kalıbı + "ekle" düğmesi
 function ek_rows($cls,$heads,$rows,$tpl,$add){
@@ -454,8 +456,8 @@ function ek_prow($mats,$p=null){
     .ek_cell('Parça','<input name="ptitle[]" placeholder="örn. Altlık" value="'.h((string)($p['title']??'')).'">')
     .ek_cell('Adet','<input name="ppcs[]" type="number" min="1" max="999" value="'.($p?ek_pcs($p):1).'">')
     .ek_cell('Malzeme','<select name="pmat[]">'.ek_mopts($mats,$p['material_id']??0).'</select>')
-    .ek_cell('Miktar / adet','<input name="pamt[]" inputmode="decimal" placeholder="gram" value="'.h($p?(string)($p['amount']+0):'').'">')
-    .ek_cell('Saat / adet','<input name="phrs[]" inputmode="decimal" placeholder="saat" value="'.h($p?(string)($p['hours']+0):'').'">')
+    .ek_cell('Miktar / adet','<input name="pamt[]" inputmode="decimal" placeholder="gram" value="'.h($p?ek_n($p['amount']):'').'">')
+    .ek_cell('Saat / adet','<input name="phrs[]" inputmode="decimal" placeholder="saat" value="'.h($p?ek_n($p['hours']):'').'">')
     .ek_rx().'</div>';
 }
 // Şablon formu: yeni kayıt ve düzenleme aynı düzeni kullanır
@@ -464,8 +466,8 @@ function ek_rform($C,$mats,$watt,$kwh,$r=null){
   if($rows==='') $rows=ek_prow($mats).($r?'':ek_prow($mats));
   return '<form method="post" class="row f4" data-calc="r" data-watt="'.$watt.'" data-kwh="'.$kwh.'">'.$C.'<input type="hidden" name="a" value="'.($r?'redit':'radd').'">'.($r?'<input type="hidden" name="id" value="'.$r['id'].'">':'')
     .'<label class="lbl s2">Ürün adı<input name="name" required value="'.h((string)($r['name']??'')).'" placeholder="örn. Bardak altlığı seti"></label>'
-    .'<label class="lbl">Satış fiyatı (₺)<input name="sale_price" inputmode="decimal" value="'.h($r?(string)($r['sale_price']+0):'').'" placeholder="0"></label>'
-    .'<label class="lbl">Diğer maliyet / adet (₺)<input name="extra_cost" inputmode="decimal" value="'.h($r?(string)($r['extra_cost']+0):'').'" placeholder="led, kablo, ambalaj"></label>'
+    .'<label class="lbl">Satış fiyatı (₺)<input name="sale_price" inputmode="decimal" value="'.h($r?ek_n($r['sale_price']):'').'" placeholder="0"></label>'
+    .'<label class="lbl">Diğer maliyet / adet (₺)<input name="extra_cost" inputmode="decimal" value="'.h($r?ek_n($r['extra_cost']):'').'" placeholder="led, kablo, ambalaj"></label>'
     .'<h3 class="sec">Parçalar</h3>'
     .ek_rows('rp',['Parça','Adet','Malzeme','Miktar / adet','Saat / adet'],$rows,ek_prow($mats),'Parça ekle')
     .'<p class="hint full">Her satır, 1 ürünün içindeki bir parçadır; miktar ve süre 1 adet içindir. Örnek: 4 altlık + 1 kap için "Altlık" adet 4, "Kap" adet 1. Birkaç tanesini aynı tablada basıyorsanız tablanın toplam gram ve süresini adede bölün. Çok renkli parçada her renk için ayrı satır açın, süreyi yalnızca birine yazın.</p>'
@@ -487,7 +489,7 @@ function ek_rcard($r,$c,$can,$C,$mats,$watt,$kwh,$today){
 <form method="post" class="row f4"><?=$C?><input type="hidden" name="a" value="rsell"><input type="hidden" name="id" value="<?=$r['id']?>">
 <label class="lbl">Tarih<input type="date" name="sold_on" value="<?=$today?>"></label>
 <label class="lbl">Adet<input name="qty" type="number" min="1" value="1"></label>
-<label class="lbl">Birim fiyat (₺)<input name="unit_price" inputmode="decimal" value="<?=h((string)($r['sale_price']+0))?>"></label>
+<label class="lbl">Birim fiyat (₺)<input name="unit_price" inputmode="decimal" value="<?=h(ek_n($r['sale_price']))?>"></label>
 <label class="lbl">Kanal<select name="channel"><?php foreach(CHANNELS as $ch): ?><option><?=$ch?></option><?php endforeach; ?></select></label>
 <label class="lbl">Komisyon (₺)<input name="fee" inputmode="decimal" placeholder="0"></label>
 <label class="lbl">Kargo – sizin ödediğiniz (₺)<input name="shipping" inputmode="decimal" placeholder="0"></label>
@@ -548,7 +550,7 @@ function ek_mrow($mats,$x=null){
     $uc=(float)$x['amount']>0 ? (float)$x['cost']/(float)$x['amount'] : 0;
     return '<div class="rw" data-uc="'.$uc.'"><span class="c fix">'.sw($x['hex']).(!empty($x['part'])?h($x['part']).': ':'').h($x['name']).(($x['color']??'')!==''?' · '.h($x['color']):'')
       .'<input type="hidden" name="pmid[]" value="'.(int)$x['id'].'"><input type="hidden" name="mat[]" value=""></span>'
-      .ek_cell('Miktar','<input name="amt[]" inputmode="decimal" value="'.h((string)($x['amount']+0)).'">').'<span class="u">'.h($x['unit']).'</span>'.ek_rx().'</div>';
+      .ek_cell('Miktar','<input name="amt[]" inputmode="decimal" value="'.h(ek_n($x['amount'])).'">').'<span class="u">'.h($x['unit']).'</span>'.ek_rx().'</div>';
   }
   return '<div class="rw">'.ek_cell('Malzeme','<select name="mat[]">'.ek_mopts($mats).'</select><input type="hidden" name="pmid[]" value="">')
     .ek_cell('Miktar','<input name="amt[]" inputmode="decimal" placeholder="0">').'<span class="u"></span>'.ek_rx().'</div>';
@@ -564,9 +566,9 @@ function ek_bform($C,$mats,$watt,$kwh,$today,$p=null,$rows=[]){
   foreach(STATUS as $k=>$v) $o.='<option value="'.$k.'"'.($st===$k?' selected':'').'>'.$v.'</option>';
   $o.='</select></label>'
     .'<label class="lbl">Adet<input name="qty" type="number" min="1" value="'.(int)($p['qty']??1).'"></label>'
-    .'<label class="lbl">Baskı süresi (saat)<input name="hours" inputmode="decimal" value="'.h($p?(string)($p['hours']+0):'').'" placeholder="2,5"></label>'
-    .'<label class="lbl">Diğer maliyet (₺)<input name="extra_cost" inputmode="decimal" value="'.h($p?(string)($p['extra_cost']+0):'').'" placeholder="ambalaj, boya"></label>'
-    .'<label class="lbl">Satış fiyatı / adet (₺)<input name="sale_price" inputmode="decimal" value="'.h($p?(string)($p['sale_price']+0):'').'" placeholder="0"></label>'
+    .'<label class="lbl">Baskı süresi (saat)<input name="hours" inputmode="decimal" value="'.h($p?ek_n($p['hours']):'').'" placeholder="2,5"></label>'
+    .'<label class="lbl">Diğer maliyet (₺)<input name="extra_cost" inputmode="decimal" value="'.h($p?ek_n($p['extra_cost']):'').'" placeholder="ambalaj, boya"></label>'
+    .'<label class="lbl">Satış fiyatı / adet (₺)<input name="sale_price" inputmode="decimal" value="'.h($p?ek_n($p['sale_price']):'').'" placeholder="0"></label>'
     .'<h3 class="sec">Malzemeler</h3>'
     .ek_rows('rm',['Malzeme','Miktar',''],$rw,ek_mrow($mats),'Malzeme ekle')
     .'<label class="lbl full">Not<textarea name="notes" rows="2" placeholder="Katman yüksekliği, doluluk, müşteri isteği...">'.h((string)($p['notes']??'')).'</textarea></label>'
@@ -591,8 +593,8 @@ function ek_bquick($db,$C,$today){
 // Baskı kartı
 function ek_bcard($p,$rows,$sd,$C,$mats,$watt,$kwh,$today){
   $q=max(1,(int)$p['qty']); $mc=(float)$p['material_cost']; $pc=(float)$p['power_cost']; $ex=(float)$p['extra_cost']; $tot=$mc+$pc+$ex; $u=$tot/$q; $sp=(float)$p['sale_price'];
-  $it=[['Malzeme',tl($mc)],['Elektrik'.($p['hours']>0?' · '.q($p['hours']).' sa':''),tl($pc)],['Diğer',tl($ex)],['Toplam maliyet',tl($tot),'t']];
-  if($q>1) $it[]=['Adet başı maliyet',tl($u)];
+  $it=[['Malzeme',tl($mc)],['Elektrik'.($p['hours']>0?' · '.q($p['hours']).' sa':''),tl($pc)],['Diğer',tl($ex)],['Toplam',tl($tot),'t']];
+  if($q>1) $it[]=['Adet başı',tl($u)];
   $it[]=['Satış / adet',$sp>0?tl($sp):'—']; $it[]=['Kâr / adet',$sp>0?tl($sp-$u):'—','',$sp>0?ek_kar($sp-$u):'']; ?>
 <article class="it">
 <header><h2><?=h($p['title'])?><?=$p['status']!=='ok'?'<span class="badge'.($p['status']==='test'?' t':'').'">'.h(STATUS[$p['status']]??$p['status']).'</span>':''?><?=!empty($p['recipe_id'])?'<span class="badge t">Şablondan</span>':''?></h2>

@@ -254,7 +254,7 @@ if($ok){
 $today=date('Y-m-d');
 $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Atölye paneli</title><link rel="stylesheet" href="style.css?v=6">
+<title>Atölye paneli</title><link rel="stylesheet" href="style.css?v=7">
 <link rel="manifest" href="admin-manifest.json"><meta name="theme-color" content="#1b1931">
 <link rel="icon" type="image/png" href="app-icon.php?s=192&amp;v=2"><link rel="apple-touch-icon" href="app-icon.php?s=180&amp;v=2">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Atölye">
@@ -429,7 +429,7 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
       });
       var pc=h*W/1000*K, ex=n(val('extra_cost')), tot=mc+pc+ex, per=tot/q, sp=n(val('sale_price'));
       out.innerHTML=kv('Malzeme',tl(mc))+kv('Elektrik'+(h?' · '+h.toLocaleString('tr-TR',{maximumFractionDigits:2})+' sa':''),W&&K?tl(pc):'<small>ayar yok</small>')+kv('Diğer',tl(ex))
-        +kv(R?'Maliyet / adet':'Toplam maliyet',tl(tot),'t')+(q>1?kv('Adet başı maliyet',tl(per)):'')
+        +kv(R?'Maliyet / adet':'Toplam',tl(tot),'t')+(q>1?kv('Adet başı',tl(per)):'')
         +kv(R?'Satış fiyatı':'Satış / adet',sp>0?tl(sp):'—')+kv('Kâr / adet',sp>0?tl(sp-per):'—','',sp>0?(sp-per<0?'neg':'pos'):'');
     }
     f.addEventListener('input',calc); f.addEventListener('change',calc); calc();
