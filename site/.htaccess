@@ -3,8 +3,8 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # www adresi tek adrese yönlendirilir (panel dosyaları hariç: kurulu panel uygulaması etkilenmesin)
-RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
 RewriteCond %{REQUEST_URI} !^/(admin|app-icon\.php|style\.css)
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
 RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 # /index.php adresi ana sayfayla aynı içeriği gösterir; tek adrese yönlendirilir
 RewriteCond %{THE_REQUEST} \s/+index\.php[\s?]
