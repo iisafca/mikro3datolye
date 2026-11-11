@@ -454,4 +454,5 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
   }
 })();
 </script>
+<script src="admin-3mf.js?v=1" defer></script>
 </body></html>
