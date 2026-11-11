@@ -47,10 +47,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,
 .top{position:sticky;top:0;z-index:40;background:var(--s-low);box-shadow:0 4px 20px rgba(0,0,0,.45)}
 .top .wrap{height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px;max-width:none;padding:0 24px}
 .logo{display:flex;align-items:center;gap:12px;text-decoration:none;white-space:nowrap}
-.mark{display:grid;gap:3px;width:26px}
-.mark i{display:block;height:6px;border-radius:3px;background:#ff4f7b}
-.mark i:nth-child(2){background:var(--cyan);margin:0 3px}
-.mark i:nth-child(3){background:#b8e43a;margin:0 6px}
+.mark{display:block;flex:none;width:42px;height:42px;background:url(/logo.svg) center/contain no-repeat}
 .logo b{display:block;font:800 1.55rem/1 var(--f-disp);letter-spacing:.06em;text-transform:uppercase;color:var(--cream)}
 .logo small{display:block;font:italic 600 .78rem/1 var(--f-acc);color:var(--mut);margin-top:4px}
 .top nav{display:flex;align-items:center;gap:24px}
@@ -353,6 +350,7 @@ footer>.wrap>.copy:only-of-type{border-top:1px solid rgba(211,197,173,.18);paddi
   .top .wrap{height:64px}
   .logo b{font-size:1.3rem}
   .logo small{font-size:.7rem}
+.mark{width:34px;height:34px}
   .sec{padding:68px 0}
   .shop,.gallery{padding:84px 0}
   .hero{padding:36px 0 80px}

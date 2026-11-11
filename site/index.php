@@ -85,12 +85,13 @@ function loadAnalytics(){
 <?php if($seoImg): ?><meta property="og:image" content="<?= h($seoImg) ?>"><meta name="twitter:card" content="summary_large_image"><?php endif; ?>
 <script type="application/ld+json"><?= json_encode($ld,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP) ?></script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/app-icon.php?s=180&amp;v=2">
 <meta name="theme-color" content="#1b1931">
 <link rel="preload" href="barlow-condensed-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="site.css?v=7"></head><body>
+<link rel="stylesheet" href="site.css?v=8"></head><body>
 
 <header class="top" id="top"><div class="wrap">
-  <a class="logo" href="./" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span><span><b>Mikro 3D Atölye</b><small>Kişiye özel 3D baskı</small></span></a>
+  <a class="logo" href="./" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"></span><span><b>Mikro 3D Atölye</b><small>Kişiye özel 3D baskı</small></span></a>
   <nav id="menu" aria-label="Ana menü"><a href="#top" aria-current="page">Ana sayfa</a><a href="#urunler">Ürünler</a><a href="#ozel">Özel sipariş</a><a href="#atolye">Atölye</a><a href="#sss">SSS</a><a href="#iletisim">İletişim</a><a class="btn sm" href="<?= h($waMsg) ?>" rel="noopener"><?= ic('chat') ?>WhatsApp'tan yaz</a></nav>
   <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Menüyü aç"><span></span><span></span><span></span></button>
 </div></header>

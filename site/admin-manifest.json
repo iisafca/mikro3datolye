@@ -11,9 +11,9 @@
   "background_color": "#121028",
   "theme_color": "#1b1931",
   "icons": [
-    { "src": "/app-icon.php?s=192", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/app-icon.php?s=512", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/app-icon.php?s=512", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/app-icon.php?s=192&v=2", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon.php?s=512&v=2", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon.php?s=512&v=2", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
     { "name": "Yeni baskı", "url": "/admin.php?t=b" },

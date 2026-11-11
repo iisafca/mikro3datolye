@@ -256,7 +256,7 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>Atölye paneli</title><link rel="stylesheet" href="style.css?v=4">
 <link rel="manifest" href="admin-manifest.json"><meta name="theme-color" content="#1b1931">
-<link rel="icon" type="image/png" href="app-icon.php?s=192"><link rel="apple-touch-icon" href="app-icon.php?s=180">
+<link rel="icon" type="image/png" href="app-icon.php?s=192&amp;v=2"><link rel="apple-touch-icon" href="app-icon.php?s=180&amp;v=2">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Atölye">
 </head><body><main class="wrap" style="padding:20px 20px 60px">
 <?php if(!$ok): ?><h1>Yönetim girişi</h1><?php if($msg)echo '<p class="msg">'.h($msg).'</p>'; ?>
