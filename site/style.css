@@ -97,34 +97,75 @@ td.act{white-space:nowrap}td.act form{margin:0}
 .bars b{display:block;margin-top:6px;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bars small{color:var(--mut);font-size:.76rem}
 
-/* Ürün şablonları */
-.rc{background:var(--s);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0;box-shadow:4px 4px 0 var(--deep)}
-.rc header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px 12px}
-.rc h2{margin:0;font:800 1.7rem/1 var(--disp);letter-spacing:.03em;text-transform:uppercase;color:var(--cream)}
-.rc header span{color:var(--mut);font-size:.86rem}
-.parts{list-style:none;margin:12px 0;padding:0}
-.parts li{display:grid;grid-template-columns:minmax(90px,1fr) 2.2fr auto;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:.92rem}
-.parts em{font-style:normal;color:var(--mut);white-space:nowrap}
-.rc .cards{margin:10px 0}
-.rc .cards>div{background:var(--bg);box-shadow:none}
-.rc form.inl{margin:12px 0}
-.rc details.ed{margin-top:10px}
-.rc details.ed>form.row{min-width:0}
-.prow{display:grid;grid-template-columns:1.1fr 62px 1.7fr 84px 84px;gap:8px;margin-bottom:8px}
-.mrow{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 120px 28px;gap:10px;align-items:end}
-.mrow .u{padding-bottom:10px;color:var(--mut);font-size:.9rem}
+/* Şablonlar ve Baskılar: ortak form düzeni, satır düzenleyici, maliyet şeridi ve kartlar */
+form.row.f4,details.ed>form.row.f4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.s2{grid-column:span 2}
+.sec{grid-column:1/-1;display:flex;align-items:center;gap:12px;margin:8px 0 0;font:800 1.1rem/1 var(--disp);letter-spacing:.06em;text-transform:uppercase;color:var(--cream)}
+.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.rows{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
+.rh,.rw{display:grid;gap:8px;align-items:center}
+.rp .rh,.rp .rw{grid-template-columns:1.2fr 70px 1.8fr 96px 96px 34px}
+.rm .rh,.rm .rw{grid-template-columns:minmax(0,1fr) 120px 44px 34px}
+.rh{font-size:.74rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+.rw .c{display:block;min-width:0}
+.rw .cl{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.rw .fix{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rw .u{color:var(--mut);font-size:.9rem}
+button.rx{width:34px;height:34px;padding:0;background:none;box-shadow:none;border:1px solid var(--line);border-radius:7px;color:var(--mut);font-size:1.25rem;font-weight:400;line-height:1}
+button.rx:hover{transform:none;box-shadow:none;color:var(--warn);border-color:var(--warn)}
+button.radd{align-self:flex-start}
+.sum{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.sum>div{flex:1 1 112px;min-width:0;background:var(--bg);padding:9px 12px}
+.sum small{display:block;color:var(--mut);font-size:.74rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sum b{display:block;font:800 1.3rem/1.2 var(--disp);letter-spacing:.01em;white-space:nowrap}
+.sum b small{display:inline;font:400 .8rem/1.2 "Plus Jakarta Sans",sans-serif}
+.sum .t{background:var(--s2)}.sum .t b{color:var(--cream)}
+.it{background:var(--s);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0;box-shadow:3px 3px 0 var(--deep)}
+.it>header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
+.it h2{margin:0;font:800 1.5rem/1.1 var(--disp);letter-spacing:.03em;text-transform:uppercase;color:var(--cream)}
+.it h2 .badge{font-family:"Plus Jakarta Sans",sans-serif;letter-spacing:0;text-transform:none;vertical-align:middle}
+.it .meta{color:var(--mut);font-size:.86rem}
+.lines{list-style:none;margin:10px 0;padding:0}
+.lines li{display:grid;grid-template-columns:minmax(90px,1fr) 2.2fr auto;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:.92rem}
+.lines em{font-style:normal;color:var(--mut);white-space:nowrap}
+.it .sum{margin:10px 0}
+.it>.hint{margin:8px 0 0}
+.acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:12px}
+.acts form{margin:0}
+.acts form.inl{flex-wrap:nowrap}
+.acts form.inl input{flex:0 1 auto;min-width:0;width:auto}
+.acts form.inl input[type=number]{width:70px}
+.acts .gap{flex:1}
+.acts details.ed>summary{display:inline-block;background:var(--s2);color:var(--cream);border-radius:8px;padding:9px 14px;font-size:.92rem;font-weight:700;line-height:1.2;text-decoration:none;box-shadow:3px 3px 0 var(--deep)}
+.acts details.ed[open]{flex:1 0 100%;order:9}
+.acts details.ed[open]>summary{background:var(--cream);color:var(--on)}
+.acts details.ed>form.row{min-width:0;margin:10px 0 0}
 
 /* Telefon / uygulama görünümü */
 @media(max-width:640px){
   .wrap{padding-left:12px!important;padding-right:12px!important}
   h1{font-size:1.7rem}
   .full2{grid-column:1/-1}
-  .mrow{grid-template-columns:minmax(0,1fr) 90px 22px}
-  .prow{grid-template-columns:1fr 1fr 1fr}.prow>input:first-child{grid-column:span 2}.prow select{grid-column:1/-1}
   .cols2{grid-template-columns:1fr}
   .cards b{font-size:1.4rem}
-  .parts li{grid-template-columns:1fr auto}
-  .parts li span{grid-column:1/-1;grid-row:2}
+  form.row.f4,details.ed>form.row.f4{grid-template-columns:1fr 1fr}
+  .s2{grid-column:1/-1}
+  .rh{display:none}
+  .rw{align-items:end;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px}
+  .rw .cl{position:static;width:auto;height:auto;clip-path:none;display:block;margin-bottom:4px;font-size:.76rem;font-weight:600;color:var(--mut)}
+  .rp .rw{grid-template-columns:1fr 1fr 1fr 34px;grid-template-areas:"t t t x" "m m m m" "a g h h"}
+  .rp .rw>.c:nth-child(1){grid-area:t}.rp .rw>.c:nth-child(2){grid-area:a}.rp .rw>.c:nth-child(3){grid-area:m}.rp .rw>.c:nth-child(4){grid-area:g}.rp .rw>.c:nth-child(5){grid-area:h}
+  .rm .rw{grid-template-columns:1fr 1fr 34px;grid-template-areas:"m m x" "g u u"}
+  .rm .rw>.c:nth-child(1){grid-area:m}.rm .rw>.c:nth-child(2){grid-area:g}.rm .rw>.u{grid-area:u;padding-bottom:9px}
+  .rw>.rx{grid-area:x;justify-self:end}
+  .rw .fix{white-space:normal;padding-bottom:8px}
+  .sum>div{flex-basis:30%}
+  .lines li{grid-template-columns:1fr auto}
+  .lines li>span{grid-column:1/-1;grid-row:2}
+  .it{padding:12px}
+  .it h2{font-size:1.3rem}
+  .acts form.inl{flex:1 0 100%}
+  .acts form.inl input[type=date]{flex:1}
   .bars{gap:6px;padding:10px}
   .bars b{font-size:.66rem}
   .bw{height:90px}

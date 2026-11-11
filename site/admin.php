@@ -254,7 +254,7 @@ if($ok){
 $today=date('Y-m-d');
 $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Atölye paneli</title><link rel="stylesheet" href="style.css?v=5">
+<title>Atölye paneli</title><link rel="stylesheet" href="style.css?v=6">
 <link rel="manifest" href="admin-manifest.json"><meta name="theme-color" content="#1b1931">
 <link rel="icon" type="image/png" href="app-icon.php?s=192&amp;v=2"><link rel="apple-touch-icon" href="app-icon.php?s=180&amp;v=2">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Atölye">
@@ -314,44 +314,16 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
   $r=$db->prepare("SELECT * FROM prints WHERE $w ORDER BY printed_on DESC, id DESC LIMIT 300"); $r->execute($pa); $prints=$r->fetchAll();
   $pm=[]; if($prints){ foreach($db->query("SELECT * FROM print_materials WHERE print_id IN (".implode(',',array_map(fn($p)=>(int)$p['id'],$prints)).") ORDER BY id") as $x) $pm[$x['print_id']][]=$x; } ?>
 <div class="cards"><div><small><?=h(plabel())?> · baskı</small><b><?=$sum['n']?></b></div><div><small>Toplam maliyet</small><b><?=tl($sum['c'])?></b></div><div><small>Kullanılan filament</small><b><?=q($grams)?> g</b></div><div><small>Baskı süresi</small><b><?=q($sum['h'])?> sa</b></div><div><small>Fire maliyeti</small><b class="<?=$sum['f']>0?'neg':''?>"><?=tl($sum['f'])?></b></div></div>
-<details class="add" open><summary>+ Yeni baskı kaydet</summary>
-<form method="post" class="row" id="bform" data-watt="<?=$watt?>" data-kwh="<?=$kwh?>"><?=$C?><input type="hidden" name="a" value="badd">
-<label class="lbl">Tarih<input type="date" name="printed_on" value="<?=$today?>"></label>
-<label class="lbl full2">Ne bastınız?<input name="title" placeholder="örn. İsimli anahtarlık – Elif" required></label>
-<label class="lbl">Adet<input name="qty" type="number" min="1" value="1"></label>
-<label class="lbl">Baskı süresi (saat)<input name="hours" inputmode="decimal" placeholder="2,5"></label>
-<?php for($i=0;$i<3;$i++): ?><div class="mrow"><label class="lbl">Malzeme <?=$i+1?><select name="mat[]"><?=$matOpts?></select></label><label class="lbl">Kullanılan<input name="amt[]" inputmode="decimal" placeholder="0"></label><span class="u"></span></div><?php endfor; ?>
-<label class="lbl">Diğer maliyet (₺)<input name="extra_cost" inputmode="decimal" placeholder="ambalaj, boya, aparat"></label>
-<label class="lbl">Satış fiyatı / adet (₺)<input name="sale_price" inputmode="decimal" placeholder="0"></label>
-<label class="lbl">Durum<select name="status"><?php foreach(STATUS as $k=>$v): ?><option value="<?=$k?>"><?=$v?></option><?php endforeach; ?></select></label>
-<label class="lbl full">Not<textarea name="notes" rows="2" placeholder="Katman yüksekliği, doluluk, müşteri isteği..."></textarea></label>
-<div class="calc" id="bcalc"></div>
-<label class="ck full"><input type="checkbox" name="deduct" value="1" checked> Kullanılan malzemeyi stoktan düş</label>
-<button>Baskıyı kaydet</button></form></details>
+<details class="add"<?=$prints?'':' open'?>><summary>+ Yeni baskı kaydet</summary><?=ek_bform($C,$mats,$watt,$kwh,$today)?></details>
+<?php ek_bquick($db,$C,$today); ?>
 <details class="add"><summary>Elektrik ayarları <?=($watt&&$kwh)?'· '.q($watt).' W, '.q($kwh).' ₺/kWh':'· tanımlı değil'?></summary>
 <form method="post" class="row"><?=$C?><input type="hidden" name="a" value="set">
 <label class="lbl">Elektrik birim fiyatı (₺/kWh)<input name="kwh_price" inputmode="decimal" value="<?=h($kwh?:'')?>" placeholder="faturanızdaki birim fiyat"></label>
 <label class="lbl">Yazıcının ortalama gücü (W)<input name="printer_watt" inputmode="decimal" value="<?=h($watt?:'')?>" placeholder="örn. 150"></label>
 <p class="full hint">Baskı süresiyle çarpılarak her baskıya elektrik maliyeti eklenir. Ortalama güç, yazıcının etiketindeki en yüksek güçten düşüktür; bir prizli wattmetreyle ölçebilirsiniz.</p>
 <button>Kaydet</button></form></details>
-<div class="x"><table><tr><th>Tarih</th><th>Baskı</th><th>Malzeme</th><th>Adet</th><th>Maliyet</th><th>Satış / adet</th><th>Kâr / adet</th><th></th></tr>
-<?php foreach($prints as $p): $u=pcost($p); $tot=$u*max(1,(int)$p['qty']); $sd=(int)($sold[$p['id']]??0); ?>
-<tr><td class="nowrap"><?=day($p['printed_on'])?></td>
-<td><b><?=h($p['title'])?></b><?=$p['status']!=='ok'?'<span class="badge'.($p['status']==='test'?' t':'').'">'.h(STATUS[$p['status']]??$p['status']).'</span>':''?><?=$p['notes']?'<br><small>'.h($p['notes']).'</small>':''?></td>
-<td><?php foreach($pm[$p['id']]??[] as $x): ?><div class="nowrap"><?=sw($x['hex'])?><?=!empty($x['part'])?h($x['part']).': ':''?><?=h($x['name'])?> <small><?=q($x['amount'])?> <?=h($x['unit'])?></small></div><?php endforeach; ?><?=$p['hours']>0?'<small>'.q($p['hours']).' saat</small>':''?></td>
-<td class="nowrap"><?=(int)$p['qty']?><?=$sd?'<br><small>'.$sd.' satıldı</small>':''?></td>
-<td class="nowrap"><?=tl($tot)?><br><small>adet: <?=tl($u)?></small></td>
-<td class="nowrap"><?=$p['sale_price']>0?tl($p['sale_price']):'—'?></td>
-<td class="nowrap"><?php if($p['sale_price']>0): $k=$p['sale_price']-$u; ?><b class="<?=$k<0?'neg':'pos'?>"><?=tl($k)?></b><?php else: ?>—<?php endif; ?></td>
-<td class="act"><details class="ed"><summary>Düzenle</summary><form method="post" class="row"><?=$C?><input type="hidden" name="a" value="bedit"><input type="hidden" name="id" value="<?=$p['id']?>">
-<label class="lbl">Tarih<input type="date" name="printed_on" value="<?=h($p['printed_on'])?>"></label><label class="lbl">Ad<input name="title" value="<?=h($p['title'])?>" required></label>
-<label class="lbl">Adet<input name="qty" type="number" min="1" value="<?=(int)$p['qty']?>"></label><label class="lbl">Süre (saat)<input name="hours" inputmode="decimal" value="<?=h($p['hours']+0)?>"></label>
-<label class="lbl">Diğer maliyet (₺)<input name="extra_cost" inputmode="decimal" value="<?=h($p['extra_cost']+0)?>"></label><label class="lbl">Satış fiyatı / adet<input name="sale_price" inputmode="decimal" value="<?=h($p['sale_price']+0)?>"></label>
-<label class="lbl">Durum<select name="status"><?php foreach(STATUS as $k=>$v): ?><option value="<?=$k?>"<?=$p['status']===$k?' selected':''?>><?=$v?></option><?php endforeach; ?></select></label>
-<label class="lbl full">Not<textarea name="notes" rows="2"><?=h($p['notes'])?></textarea></label>
-<button>Kaydet</button></form><?php ek_bmat_form($p,$pm[$p['id']]??[],$C,$matOpts); ?></details>
-<form method="post"><?=$C?><input type="hidden" name="id" value="<?=$p['id']?>"><button class="lnk" name="a" value="bcopy">Kopyala</button> <button class="lnk neg" name="a" value="bdel" onclick="return confirm('Bu baskı silinsin mi?<?=$p['deducted']?' Kullanılan malzeme stoğa geri eklenir.':''?>')">Sil</button></form></td></tr>
-<?php endforeach; if(!$prints): ?><tr><td colspan="8" class="empty"><?=h(plabel())?> için kayıtlı baskı yok.</td></tr><?php endif; ?></table></div>
+<?php foreach($prints as $p) ek_bcard($p,$pm[$p['id']]??[],(int)($sold[$p['id']]??0),$C,$mats,$watt,$kwh,$today);
+  if(!$prints): ?><p class="empty"><?=h(plabel())?> için kayıtlı baskı yok.</p><?php endif; ?>
 
 <?php elseif($t==='s'): /* ================= SATIŞLAR ================= */
   [$w,$pa]=per('sold_on');
@@ -432,19 +404,36 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
     var hs=[].map.call(hr.children,function(c){ return c.textContent.trim(); });
     [].forEach.call(tb.rows,function(r){ if(r===hr) return; [].forEach.call(r.cells,function(td,i){ if(!td.colSpan||td.colSpan<2){ if(hs[i]) td.setAttribute('data-l',hs[i]); } }); });
   });
-  // Baskı formu: maliyeti anında hesaplar
-  var f=document.getElementById('bform');
-  if(f){
-    var E=function(k){ return f.elements.namedItem(k); }, out=document.getElementById('bcalc'), W=+f.dataset.watt||0, K=+f.dataset.kwh||0;
-    var calc=function(){
-      var mc=0;
-      f.querySelectorAll('.mrow').forEach(function(r){ var o=r.querySelector('select').selectedOptions[0], u=r.querySelector('.u');
-        if(o&&o.value){ mc+=(+o.dataset.uc||0)*n(r.querySelector('input').value); u.textContent=o.dataset.unit; } else u.textContent=''; });
-      var pc=n(E('hours').value)*W/1000*K, ex=n(E('extra_cost').value), q=Math.max(1,parseInt(E('qty').value,10)||1), tot=mc+pc+ex, per=tot/q, sp=n(E('sale_price').value);
-      out.innerHTML='Malzeme <b>'+tl(mc)+'</b> · Elektrik <b>'+tl(pc)+'</b>'+(W&&K?'':' <small>(ayar yok)</small>')+' · Diğer <b>'+tl(ex)+'</b><br>Toplam <b>'+tl(tot)+'</b> · Adet başı <b>'+tl(per)+'</b>'+(sp>0?' · Adet başı kâr <b class="'+(sp-per<0?'neg':'pos')+'">'+tl(sp-per)+'</b>':'');
-    };
+  // Satır düzenleyici (Şablonlar ve Baskılar formlarında ortak): "+ ekle" yeni satır açar, "×" satırı siler
+  document.addEventListener('click',function(e){
+    var add=e.target.closest('.radd'), del=e.target.closest('.rx'), f=null, box, row;
+    if(add){ box=add.closest('.rows'); row=box.querySelector('template').content.firstElementChild.cloneNode(true);
+      box.insertBefore(row,box.querySelector('template')); f=add.form; var first=row.querySelector('input:not([type=hidden]),select'); if(first) first.focus(); }
+    else if(del){ box=del.closest('.rows'); row=del.closest('.rw'); f=del.form;
+      if(box.querySelectorAll('.rw').length>1||row.dataset.uc) row.remove();
+      else row.querySelectorAll('input,select').forEach(function(i){ i.value=i.name==='ppcs[]'?'1':''; }); }
+    if(f) f.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  // Maliyet şeridi (ortak): form doldurulurken anında hesaplanır
+  function kv(l,v,dc,bc){ return '<div'+(dc?' class="'+dc+'"':'')+'><small>'+l+'</small><b'+(bc?' class="'+bc+'"':'')+'>'+v+'</b></div>'; }
+  document.querySelectorAll('form[data-calc]').forEach(function(f){
+    var out=f.querySelector('.sum'), W=+f.dataset.watt||0, K=+f.dataset.kwh||0, R=f.dataset.calc==='r';
+    function val(k){ var x=f.elements.namedItem(k); return x?x.value:''; }
+    function fld(r,k){ var x=r.querySelector('[name="'+k+'[]"]'); return x?x.value:''; }
+    function calc(){
+      var mc=0, h=R?0:n(val('hours')), q=R?1:Math.max(1,parseInt(val('qty'),10)||1);
+      f.querySelectorAll('.rw').forEach(function(r){
+        var s=r.querySelector('select'), o=s?s.selectedOptions[0]:null, uc=o&&o.value?(+o.dataset.uc||0):(+r.dataset.uc||0), u=r.querySelector('.u');
+        if(R){ var k=Math.max(1,parseInt(fld(r,'ppcs'),10)||1); mc+=uc*n(fld(r,'pamt'))*k; h+=n(fld(r,'phrs'))*k; }
+        else { mc+=uc*n(fld(r,'amt')); if(u&&s) u.textContent=o&&o.value?o.dataset.unit:''; }
+      });
+      var pc=h*W/1000*K, ex=n(val('extra_cost')), tot=mc+pc+ex, per=tot/q, sp=n(val('sale_price'));
+      out.innerHTML=kv('Malzeme',tl(mc))+kv('Elektrik'+(h?' · '+h.toLocaleString('tr-TR',{maximumFractionDigits:2})+' sa':''),W&&K?tl(pc):'<small>ayar yok</small>')+kv('Diğer',tl(ex))
+        +kv(R?'Maliyet / adet':'Toplam maliyet',tl(tot),'t')+(q>1?kv('Adet başı maliyet',tl(per)):'')
+        +kv(R?'Satış fiyatı':'Satış / adet',sp>0?tl(sp):'—')+kv('Kâr / adet',sp>0?tl(sp-per):'—','',sp>0?(sp-per<0?'neg':'pos'):'');
+    }
     f.addEventListener('input',calc); f.addEventListener('change',calc); calc();
-  }
+  });
   // Satış formu: baskı seçilince ad, fiyat ve maliyeti doldurur
   var s=document.getElementById('sform');
   if(s){
