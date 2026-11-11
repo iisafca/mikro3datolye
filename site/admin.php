@@ -10,7 +10,7 @@ const CHANNELS=['Tanıdık','Shopier','Dolap','Instagram','WhatsApp','Elden','Di
 const SSTAT=['hazirlaniyor'=>'Hazırlanıyor','kargoda'=>'Kargoda','teslim'=>'Teslim edildi'];
 const AYLAR=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
-$t=$_GET['t']??'o'; if(!in_array($t,['o','m','r','b','s','g','p'],true)) $t='o';
+$t=$_GET['t']??'o'; if(!in_array($t,['o','m','r','b','s','g','p','v'],true)) $t='o';
 $ay=$_GET['ay']??date('Y-m'); if($ay!=='hepsi' && !preg_match('/^\d{4}-(0[1-9]|1[0-2])$/',$ay)) $ay=date('Y-m');
 
 /* "Bu cihazda açık kalsın": imzalı çerez. Şifre değişirse tüm cihazlardaki çerezler geçersiz olur. */
@@ -254,7 +254,7 @@ if($ok){
 $today=date('Y-m-d');
 $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
-<title>Atölye paneli</title><link rel="stylesheet" href="style.css?v=7">
+<title>Atölye paneli</title><link rel="stylesheet" href="style.css?v=8">
 <link rel="manifest" href="admin-manifest.json"><meta name="theme-color" content="#1b1931">
 <link rel="icon" type="image/png" href="app-icon.php?s=192&amp;v=2"><link rel="apple-touch-icon" href="app-icon.php?s=180&amp;v=2">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Atölye">

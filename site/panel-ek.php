@@ -293,12 +293,13 @@ function ek_post($db,$a,$id,$P,$watt,$kwh){
 
 /* ---------- Ekran parçaları ---------- */
 function ek_nav($t){
-  $o=''; foreach(['o'=>'Özet','m'=>'Stok','r'=>'Şablonlar','b'=>'Baskılar','s'=>'Satışlar','g'=>'Giderler','p'=>'Site ürünleri'] as $k=>$v) $o.='<a href="?t='.$k.'"'.($t===$k?' class="on"':'').'>'.$v.'</a>';
+  $o=''; foreach(['o'=>'Özet','m'=>'Stok','r'=>'Şablonlar','b'=>'Baskılar','s'=>'Satışlar','g'=>'Giderler','p'=>'Site ürünleri','v'=>'Reels'] as $k=>$v) $o.='<a href="?t='.$k.'"'.($t===$k?' class="on"':'').'>'.$v.'</a>';
   return $o;
 }
 function ek_page($t,$db,$C,$S,$watt,$kwh,$mats,$today){
   if($t==='o'){ ek_ozet($db,$C,$S,$mats); return true; }
   if($t==='r'){ ek_sablon($db,$C,$watt,$kwh,$mats,$today); return true; }
+  if($t==='v'){ ek_reels($db); return true; }
   if($t==='g'){ ek_gider($db,$C,$today); return true; }
   return false;
 }
@@ -609,4 +610,73 @@ function ek_bcard($p,$rows,$sd,$C,$mats,$watt,$kwh,$today){
 <form method="post"><?=$C?><input type="hidden" name="id" value="<?=$p['id']?>"><button class="lnk neg" name="a" value="bdel" onclick="return confirm('Bu baskı silinsin mi?<?=$p['deducted']?' Kullanılan malzeme stoğa geri eklenir.':''?>')">Sil</button></form>
 </div>
 </article>
+<?php }
+
+/* ---------- Reels ekranı: ürün videosundan Instagram Reels hazırlar (video tarayıcıda işlenir; kodu admin-reels.js) ---------- */
+function ek_reels($db){
+  $names=[]; try{ $names=$db->query("SELECT name FROM recipes ORDER BY name")->fetchAll(PDO::FETCH_COLUMN); }catch(Throwable $e){} ?>
+<p class="hint">Ürün videonuzu 9:16 Reels'e çevirir: kesim, hız, açılış yazısı, marka şeridi ve site adresli kapanış kartı. Video bu cihazda işlenir, sunucuya yüklenmez.</p>
+<div class="rl">
+<div class="rl-stage">
+  <div class="rl-phone"><canvas id="cv" width="1080" height="1920" aria-label="Reels önizlemesi"></canvas><div class="rl-safe" id="safe"><i class="t"></i><i class="r"></i><i class="b"></i></div></div>
+  <div class="rl-pbar"><button type="button" id="play" disabled>Oynat</button><label class="ck"><input type="checkbox" id="showSafe"> Instagram alanları</label><span class="rl-tm" id="tm">0,0 sn</span></div>
+</div>
+<div class="rl-steps">
+<section class="rl-st"><h2><span>1</span>Video</h2>
+  <label class="rl-drop" id="drop"><input type="file" id="file" accept="video/*"><span class="rl-ic">+</span><span><b id="fname">Videoyu seçin ya da buraya sürükleyin</b><small id="finfo">Telefonla çektiğiniz MP4 / MOV. WhatsApp'tan gelen videolar da olur.</small></span></label>
+</section>
+<section class="rl-st"><h2><span>2</span>Kesim ve kadraj</h2>
+  <div class="rl-rng">
+    <span>Başlangıç</span><input type="range" id="start" min="0" max="10" step="0.1" value="0" disabled><output id="startO">0,0 sn</output>
+    <span>Bitiş</span><input type="range" id="end" min="0" max="10" step="0.1" value="10" disabled><output id="endO">10,0 sn</output>
+    <span>Yakınlaştır</span><input type="range" id="zoom" min="1" max="1.8" step="0.01" value="1"><output id="zoomO">%100</output>
+    <span>Dikey konum</span><input type="range" id="posY" min="0" max="100" step="1" value="50"><output id="posYO">orta</output>
+  </div>
+  <div class="rl-row">
+    <div class="lbl">Hız<div class="rl-seg" id="speed"><button type="button" aria-pressed="true" data-v="1">1×</button><button type="button" aria-pressed="false" data-v="1.5">1,5×</button><button type="button" aria-pressed="false" data-v="2">2×</button><button type="button" aria-pressed="false" data-v="3">3×</button></div></div>
+    <div class="lbl">Kadraj<div class="rl-seg" id="fit"><button type="button" aria-pressed="true" data-v="cover">Ekranı doldur</button><button type="button" aria-pressed="false" data-v="contain">Sığdır</button></div></div>
+  </div>
+  <div class="rl-meter"><div><small>Reels süresi</small><b id="mDur">—</b></div><div><small>Durum</small><b id="mState" class="sm">Video bekleniyor</b></div></div>
+  <p class="hint">Ürün videolarında <b>7–15 saniye</b> en iyi sonucu verir. Yatay videoda "Sığdır" ürünün tamamını gösterir, kenarları bulanık doldurur.</p>
+</section>
+<section class="rl-st"><h2><span>3</span>Yazılar</h2>
+  <div class="rl-row">
+    <label class="lbl full">Açılış yazısı (ilk 3 saniye)<input id="hook" value="Yeni ürün atölyeden çıktı" maxlength="60"></label>
+    <label class="lbl full">Alt satır (video boyunca)<input id="sub" value="Kişiye özel · 3D baskı · Bursa" maxlength="50"></label>
+    <label class="lbl full">Ürün adı (kapanış kartı ve açıklama)<input id="pname" list="rlnames" placeholder="örn. Bardak altlığı seti" maxlength="40"><datalist id="rlnames"><?php foreach($names as $n): ?><option value="<?=h($n)?>"></option><?php endforeach; ?></datalist></label>
+    <label class="lbl">Site<input id="site" value="mikro3datolye.com.tr" maxlength="40"></label>
+    <label class="lbl">Instagram<input id="handle" value="@mikro3datolye" maxlength="30"></label>
+    <label class="ck full"><input type="checkbox" id="endOn" checked> Sona 2,5 saniyelik sipariş kartı ekle (site adresi ve Instagram)</label>
+    <label class="ck full"><input type="checkbox" id="audio"> Videonun kendi sesini koru</label>
+  </div>
+  <p class="hint">Sesi kapalı bırakıp Instagram'da <b>trend bir müzik</b> eklemenizi öneririm; Reels'in keşfete düşmesine yardım eder.</p>
+</section>
+<section class="rl-st"><h2><span>4</span>Reels'i oluştur</h2>
+  <div class="rl-acts"><button type="button" id="render" disabled>Reels'i oluştur</button><span class="hint" id="rmsg">Önce bir video seçin.</span></div>
+  <div class="rl-prog" id="prog" hidden><i id="progI"></i></div>
+  <div class="rl-result" id="result" hidden>
+    <video id="out" controls playsinline></video>
+    <div><p><b class="pos" id="outInfo">Hazır.</b></p>
+      <div class="rl-acts"><button type="button" id="share" hidden>Paylaş</button><button type="button" id="save">Videoyu indir</button><button type="button" class="alt" id="again">Yeniden oluştur</button></div>
+      <p class="hint" id="saveMsg"></p></div>
+  </div>
+  <p class="hint">Oluşturma, video süresi kadar sürer. Bu sırada ekranı açık tutun.</p>
+</section>
+<section class="rl-st"><h2><span>5</span>Açıklama</h2>
+  <div class="rl-row">
+    <label class="lbl">Konu<select id="topic"><option value="genel">Genel / hediyelik</option><option value="ev">Ev ve masa dekoru</option><option value="bebek">Bebek, mevlüt, sünnet</option><option value="ogretmen">Öğretmenler Günü</option></select></label>
+    <label class="lbl">Öne çıkan özellik<input id="feat" value="İsim ve renk sizden" maxlength="50"></label>
+  </div>
+  <textarea class="rl-cap" id="cap" aria-label="Reels açıklaması"></textarea>
+  <div class="rl-acts" style="margin-top:8px"><button type="button" class="alt" id="copy">Açıklamayı kopyala</button><button type="button" class="lnk" id="capReset">Yeniden yaz</button><span class="hint" id="copyMsg"></span></div>
+  <ul class="rl-tips">
+    <li><b>Kapak:</b> yüklerken ürünün en net göründüğü kareyi seçin.</li>
+    <li><b>Saat:</b> 20:00–21:30 arası paylaşın, ilk bir saatte yorumlara cevap verin.</li>
+    <li><b>Konum:</b> Bursa ekleyin; hikâyede de paylaşın.</li>
+  </ul>
+</section>
+</div>
+</div>
+<video id="vid" class="rl-vid" playsinline muted preload="auto"></video>
+<script src="admin-reels.js?v=1" defer></script>
 <?php }
