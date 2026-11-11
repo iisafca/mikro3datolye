@@ -22,7 +22,7 @@ function ek_login_ok($db){ try{ $db->prepare("DELETE FROM login_fails WHERE ip=?
 
 /* ---------- Kurulum: yeni tablolar ve sütunlar (bir kez çalışır) ---------- */
 function ek_migrate($db,$S){
-  if(($S['ek_v']??'')==='1') return;
+  if(($S['ek_v']??'')==='2') return;
   $db->exec("CREATE TABLE IF NOT EXISTS recipes(id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(150) NOT NULL, sale_price DECIMAL(10,2) NOT NULL DEFAULT 0, extra_cost DECIMAL(10,2) NOT NULL DEFAULT 0, notes TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) CHARSET=utf8mb4");
   $db->exec("CREATE TABLE IF NOT EXISTS recipe_parts(id INT AUTO_INCREMENT PRIMARY KEY, recipe_id INT NOT NULL, title VARCHAR(100) NOT NULL, material_id INT NULL, amount DECIMAL(12,2) NOT NULL DEFAULT 0, hours DECIMAL(6,2) NOT NULL DEFAULT 0, INDEX(recipe_id)) CHARSET=utf8mb4");
   $db->exec("CREATE TABLE IF NOT EXISTS expenses(id INT AUTO_INCREMENT PRIMARY KEY, spent_on DATE NOT NULL, title VARCHAR(150) NOT NULL, category VARCHAR(60) NOT NULL DEFAULT 'Diğer', amount DECIMAL(10,2) NOT NULL DEFAULT 0, notes TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX(spent_on)) CHARSET=utf8mb4");
@@ -31,7 +31,8 @@ function ek_migrate($db,$S){
   $add('sales',['due_on'=>"DATE NULL",'paid'=>"VARCHAR(10) NOT NULL DEFAULT 'odendi'",'deposit'=>"DECIMAL(10,2) NOT NULL DEFAULT 0",'phone'=>"VARCHAR(30) NULL",'recipe_id'=>"INT NULL"]);
   $add('prints',['recipe_id'=>"INT NULL"]);
   $add('print_materials',['part'=>"VARCHAR(100) NULL"]);
-  $db->exec("REPLACE INTO settings(k,v) VALUES('ek_v','1')");
+  $add('recipe_parts',['pcs'=>"INT NOT NULL DEFAULT 1"]);   // parçanın 1 üründeki adedi
+  $db->exec("REPLACE INTO settings(k,v) VALUES('ek_v','2')");
 }
 
 /* ---------- Ürün şablonları: bir ürün birden fazla parçadan (ayrı baskıdan) oluşur ---------- */
@@ -42,11 +43,13 @@ function ek_recipes($db){
   $out=[]; foreach($rs as $r){ $r['parts']=$parts[$r['id']]??[]; $out[]=$r; } return $out;
 }
 function ek_one($db,$id){ foreach(ek_recipes($db) as $r) if((int)$r['id']===(int)$id) return $r; return null; }
-// Bir parçanın malzeme maliyeti (güncel filament fiyatıyla)
-function ek_pcost($p){ return ($p['mname']!==null && (float)$p['pack_size']>0) ? (float)$p['amount']*(float)$p['pack_price']/(float)$p['pack_size'] : 0.0; }
+// Parçanın 1 üründeki adedi (örn. 4 altlık + 1 kap = 1 ürün)
+function ek_pcs($p){ return max(1,(int)($p['pcs']??1)); }
+// Bir parçanın 1 üründeki malzeme maliyeti: 1 adedin miktarı × adet (güncel filament fiyatıyla)
+function ek_pcost($p){ return ($p['mname']!==null && (float)$p['pack_size']>0) ? (float)$p['amount']*ek_pcs($p)*(float)$p['pack_price']/(float)$p['pack_size'] : 0.0; }
 // Şablonun 1 adet maliyeti: tüm parçaların malzemesi + toplam baskı süresinin elektriği + diğer
 function ek_rcost($r,$watt,$kwh){
-  $mc=0; $h=0; foreach($r['parts'] as $p){ $mc+=ek_pcost($p); $h+=(float)$p['hours']; }
+  $mc=0; $h=0; foreach($r['parts'] as $p){ $mc+=ek_pcost($p); $h+=(float)$p['hours']*ek_pcs($p); }
   $pc=$h*$watt/1000*$kwh; $ex=(float)$r['extra_cost'];
   return ['mat'=>$mc,'pow'=>$pc,'hours'=>$h,'extra'=>$ex,'total'=>$mc+$pc+$ex];
 }
@@ -59,8 +62,8 @@ function ek_produce($db,$r,$n,$date,$watt,$kwh){
   $pid=(int)$db->lastInsertId();
   $ins=$db->prepare("INSERT INTO print_materials(print_id,material_id,name,color,hex,unit,amount,cost,part) VALUES(?,?,?,?,?,?,?,?,?)");
   $dec=$db->prepare("UPDATE materials SET qty=GREATEST(0,qty-?) WHERE id=?");
-  foreach($rows as $p){ $amt=(float)$p['amount']*$n;
-    $ins->execute([$pid,$p['material_id'],$p['mname'],$p['mcolor'],$p['mhex'],$p['munit'],$amt,round(ek_pcost($p)*$n,2),$p['title']]);
+  foreach($rows as $p){ $amt=(float)$p['amount']*ek_pcs($p)*$n;
+    $ins->execute([$pid,$p['material_id'],$p['mname'],$p['mcolor'],$p['mhex'],$p['munit'],$amt,round(ek_pcost($p)*$n,2),$p['title'].(ek_pcs($p)>1?' ×'.ek_pcs($p):'')]);
     $dec->execute([$amt,$p['material_id']]); }
   return $pid;
 }
@@ -131,11 +134,11 @@ function ek_post($db,$a,$id,$P,$watt,$kwh){
     if($a==='radd'){ $db->prepare("INSERT INTO recipes(name,sale_price,extra_cost,notes) VALUES(?,?,?,?)")->execute($v); $rid=(int)$db->lastInsertId(); }
     else { $rid=$id; $v[]=$rid; $db->prepare("UPDATE recipes SET name=?,sale_price=?,extra_cost=?,notes=? WHERE id=?")->execute($v);
            $db->prepare("DELETE FROM recipe_parts WHERE recipe_id=?")->execute([$rid]); }
-    $ins=$db->prepare("INSERT INTO recipe_parts(recipe_id,title,material_id,amount,hours) VALUES(?,?,?,?,?)");
-    $tt=(array)($_POST['ptitle']??[]); $mm=(array)($_POST['pmat']??[]); $aa=(array)($_POST['pamt']??[]); $hh=(array)($_POST['phrs']??[]); $n=0;
+    $ins=$db->prepare("INSERT INTO recipe_parts(recipe_id,title,material_id,amount,hours,pcs) VALUES(?,?,?,?,?,?)");
+    $tt=(array)($_POST['ptitle']??[]); $mm=(array)($_POST['pmat']??[]); $aa=(array)($_POST['pamt']??[]); $hh=(array)($_POST['phrs']??[]); $pp=(array)($_POST['ppcs']??[]); $n=0;
     foreach($tt as $i=>$t0){ $t0=trim((string)$t0); $mid=(int)($mm[$i]??0); $am=max(0,num($aa[$i]??'')); $hr=max(0,num($hh[$i]??''));
       if($t0==='' && !$mid && $am<=0 && $hr<=0) continue;
-      $n++; $ins->execute([$rid,$t0!==''?$t0:'Parça '.$n,$mid?:null,$am,$hr]); }
+      $n++; $ins->execute([$rid,$t0!==''?$t0:'Parça '.$n,$mid?:null,$am,$hr,max(1,min(999,(int)($pp[$i]??1)))]); }
     $db->commit();
     back(($a==='radd'?'Şablon eklendi':'Şablon güncellendi').' ('.$n.' parça).');
   }
@@ -404,9 +407,10 @@ function ek_mopts($mats,$sel=0){
   foreach($mats as $m) $o.='<option value="'.$m['id'].'" data-uc="'.ucost($m).'"'.((int)$sel===(int)$m['id']?' selected':'').'>'.h($m['name']).(($m['color']!==''&&$m['color']!==null)?' · '.h($m['color']):'').' ('.q($m['qty']).' '.h($m['unit']).')</option>';
   return $o;
 }
-// Bir parça satırı: ad · malzeme · miktar · baskı süresi
+// Bir parça satırı: ad · 1 üründeki adet · malzeme · 1 adedin miktarı · 1 adedin baskı süresi
 function ek_prow($mats,$p=null){
-  return '<div class="prow"><input name="ptitle[]" placeholder="Parça adı (örn. Gövde)" value="'.h((string)($p['title']??'')).'" aria-label="Parça adı">'
+  return '<div class="prow"><input name="ptitle[]" placeholder="Parça adı (örn. Altlık)" value="'.h((string)($p['title']??'')).'" aria-label="Parça adı">'
+    .'<input name="ppcs[]" type="number" min="1" max="999" value="'.($p?ek_pcs($p):1).'" aria-label="1 üründe kaç adet" title="1 üründe kaç adet">'
     .'<select name="pmat[]" aria-label="Malzeme">'.ek_mopts($mats,$p['material_id']??0).'</select>'
     .'<input name="pamt[]" inputmode="decimal" placeholder="gram" value="'.h($p?(string)($p['amount']+0):'').'" aria-label="Miktar">'
     .'<input name="phrs[]" inputmode="decimal" placeholder="saat" value="'.h($p?(string)($p['hours']+0):'').'" aria-label="Baskı süresi (saat)"></div>';
@@ -416,16 +420,16 @@ function ek_rform($C,$mats,$r=null){
     .'<label class="lbl full2">Ürün adı<input name="name" required value="'.h((string)($r['name']??'')).'" placeholder="örn. Ledli İsimlik"></label>'
     .'<label class="lbl">Satış fiyatı (₺)<input name="sale_price" inputmode="decimal" value="'.h($r?(string)($r['sale_price']+0):'').'"></label>'
     .'<label class="lbl">Diğer maliyet / adet (₺)<input name="extra_cost" inputmode="decimal" value="'.h($r?(string)($r['extra_cost']+0):'').'" placeholder="led, kablo, ambalaj"></label>'
-    .'<div class="full"><div class="lbl" style="margin-bottom:8px">Parçalar: her satır ayrı bir baskı (ad · malzeme · gram · saat)</div>';
+    .'<div class="full"><div class="lbl" style="margin-bottom:8px">Parçalar: ad · 1 üründe kaç adet · malzeme · 1 adedin gramı · 1 adedin süresi (saat)</div>';
   foreach(($r['parts']??[]) as $p) $o.=ek_prow($mats,$p);
   for($i=0;$i<($r?2:4);$i++) $o.=ek_prow($mats);
-  return $o.'<p class="hint">Boş satırlar kaydedilmez. Daha fazla parça gerekirse kaydedip Düzenle ile devam edin; her açılışta 2 boş satır eklenir.</p></div>'
+  return $o.'<p class="hint">Örnek: 4 altlık ve 1 kap 1 ürün ediyorsa "Altlık" satırına adet 4, "Kap" satırına adet 1 yazın. Gram ve saat 1 adet içindir; 4 altlığı aynı tablada birlikte basıyorsanız tablanın toplam gram ve süresini 4\'e bölün. Çok renkli bir parçada her renk için ayrı satır açın (aynı adetle) ve süreyi yalnızca birine yazın. Boş satırlar kaydedilmez. Daha fazla parça gerekirse kaydedip Düzenle ile devam edin; her açılışta 2 boş satır eklenir.</p></div>'
     .'<label class="lbl full">Not<textarea name="notes" rows="2">'.h((string)($r['notes']??'')).'</textarea></label>'
     .'<div class="calc"></div><button>'.($r?'Şablonu kaydet':'Şablonu ekle').'</button></form>';
 }
 function ek_sablon($db,$C,$watt,$kwh,$mats,$today){
   $rs=ek_recipes($db); ?>
-<p class="hint">Bir ürünü bir kez tanımlayın: hangi parçalardan oluşuyor, her parça hangi malzemeden kaç gram ve kaç saatte basılıyor. Sonra tek dokunuşla "Ürettim" ya da "Sattım" diyebilirsiniz.</p>
+<p class="hint">Bir ürünü bir kez tanımlayın: hangi parçalardan kaçar adet oluşuyor (örn. 4 altlık + 1 kap), her parça hangi malzemeden kaç gram ve kaç saatte basılıyor. Sonra tek dokunuşla "Ürettim" ya da "Sattım" diyebilirsiniz.</p>
 <?php if(!$mats): ?><p class="msg warn">Parçalara malzeme seçebilmek için önce Stok sekmesinden malzeme ekleyin.</p><?php endif; ?>
 <details class="add"<?=$rs?'':' open'?>><summary>+ Yeni ürün şablonu</summary><?=ek_rform($C,$mats)?></details>
 <details class="add"><summary>Fiyat hesaplayıcı</summary>
@@ -439,11 +443,11 @@ function ek_sablon($db,$C,$watt,$kwh,$mats,$today){
 <?php foreach($rs as $r):
   $c=ek_rcost($r,$watt,$kwh); $kar=(float)$r['sale_price']-$c['total'];
   $need=[]; $have=[];
-  foreach($r['parts'] as $p){ if($p['mname']===null || (float)$p['amount']<=0) continue; $mid=(int)$p['material_id']; $need[$mid]=($need[$mid]??0)+(float)$p['amount']; $have[$mid]=(float)$p['mqty']; }
+  foreach($r['parts'] as $p){ if($p['mname']===null || (float)$p['amount']<=0) continue; $mid=(int)$p['material_id']; $need[$mid]=($need[$mid]??0)+(float)$p['amount']*ek_pcs($p); $have[$mid]=(float)$p['mqty']; }
   $can=null; foreach($need as $mid=>$nd){ $kk=(int)floor($have[$mid]/$nd); $can=($can===null)?$kk:min($can,$kk); } ?>
 <article class="rc">
 <header><h2><?=h($r['name'])?></h2><span><?=count($r['parts'])?> parça · toplam <?=q($c['hours'])?> saat baskı</span></header>
-<ul class="parts"><?php foreach($r['parts'] as $p): ?><li><b><?=h($p['title'])?></b><span><?php if($p['mname']!==null): ?><?=sw($p['mhex'])?><?=h($p['mname'])?> · <?=q($p['amount'])?> <?=h($p['munit'])?><?php else: ?>malzeme seçilmedi<?php endif; ?><?=$p['hours']>0?' · '.q($p['hours']).' sa':''?></span><em><?=tl(ek_pcost($p))?></em></li><?php endforeach; ?>
+<ul class="parts"><?php foreach($r['parts'] as $p): ?><li><b><?=h($p['title'])?><?=ek_pcs($p)>1?' ×'.ek_pcs($p):''?></b><span><?php if($p['mname']!==null): ?><?=sw($p['mhex'])?><?=h($p['mname'])?> · <?=ek_pcs($p)>1?ek_pcs($p).' × ':''?><?=q($p['amount'])?> <?=h($p['munit'])?><?php else: ?>malzeme seçilmedi<?php endif; ?><?=$p['hours']>0?' · '.(ek_pcs($p)>1?ek_pcs($p).' × ':'').q($p['hours']).' sa':''?></span><em><?=tl(ek_pcost($p))?></em></li><?php endforeach; ?>
 <?php if(!$r['parts']): ?><li><span class="hint">Henüz parça eklenmedi. Düzenle ile ekleyin.</span></li><?php endif; ?></ul>
 <div class="cards"><div><small>Maliyet / adet</small><b><?=tl($c['total'])?></b></div><div><small>Satış fiyatı</small><b><?=tl($r['sale_price'])?></b></div><div><small>Kâr / adet</small><b class="<?=$kar<0?'neg':'pos'?>"><?=tl($kar)?></b></div></div>
 <p class="hint">Malzeme <?=tl($c['mat'])?> · elektrik <?=tl($c['pow'])?> · diğer <?=tl($c['extra'])?><?=$can!==null?' · <b class="'.($can<1?'neg':'').'">stok '.$can.' adet üretmeye yeter</b>':''?><?=$r['notes']?' · '.h($r['notes']):''?></p>
@@ -477,8 +481,8 @@ function ek_sablon($db,$C,$watt,$kwh,$mats,$today){
     var out=f.querySelector('.calc');
     function calc(){
       var mc=0, h=0, np=0;
-      f.querySelectorAll('.prow').forEach(function(r){ var o=r.querySelector('select').selectedOptions[0], i=r.querySelectorAll('input'), a=n(i[1].value), hr=n(i[2].value);
-        if(o&&o.value) mc+=(+o.dataset.uc||0)*a; h+=hr; if(i[0].value.trim()||a||hr||(o&&o.value)) np++; });
+      f.querySelectorAll('.prow').forEach(function(r){ var o=r.querySelector('select').selectedOptions[0], i=r.querySelectorAll('input'), k=Math.max(1,parseInt(i[1].value,10)||1), a=n(i[2].value), hr=n(i[3].value);
+        if(o&&o.value) mc+=(+o.dataset.uc||0)*a*k; h+=hr*k; if(i[0].value.trim()||a||hr||(o&&o.value)) np+=k; });
       var pc=h*W/1000*K, ex=n(f.elements.namedItem('extra_cost').value), tot=mc+pc+ex, sp=n(f.elements.namedItem('sale_price').value);
       out.innerHTML=np+' parça · '+h.toLocaleString('tr-TR')+' saat · Malzeme <b>'+tl(mc)+'</b> · Elektrik <b>'+tl(pc)+'</b>'+(W&&K?'':' <small>(elektrik ayarı yok)</small>')+' · Diğer <b>'+tl(ex)+'</b><br>Maliyet / adet <b>'+tl(tot)+'</b>'+(sp>0?' · Kâr / adet <b class="'+(sp-tot<0?'neg':'pos')+'">'+tl(sp-tot)+'</b>':'');
     }
