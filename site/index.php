@@ -90,11 +90,13 @@ function loadAnalytics(){
 <meta name="theme-color" content="#1b1931" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f5edda" media="(prefers-color-scheme: light)">
 <link rel="preload" href="barlow-condensed-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="site.css?v=9"></head><body>
+<script>(function(){var d=document.documentElement,K="m3d_tema",C={dark:"#1b1931",light:"#f5edda"};function sys(){return window.matchMedia&&matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}function bar(){var t=d.getAttribute("data-theme"),m=document.querySelectorAll("meta[name=theme-color]");for(var i=0;i<m.length;i++)m[i].content=t?C[t]:(/light/.test(m[i].media)?C.light:C.dark)}var s=null;try{s=localStorage.getItem(K)}catch(e){}if(s==="light"||s==="dark"){d.setAttribute("data-theme",s);bar()}window.temaDegis=function(){var n=(d.getAttribute("data-theme")||sys())==="light"?"dark":"light";try{if(n===sys()){d.removeAttribute("data-theme");localStorage.removeItem(K)}else{d.setAttribute("data-theme",n);localStorage.setItem(K,n)}}catch(e){d.setAttribute("data-theme",n)}bar()}})();</script>
+<link rel="stylesheet" href="site.css?v=10"></head><body>
 
 <header class="top" id="top"><div class="wrap">
   <a class="logo" href="./" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"></span><span><b>Mikro 3D Atölye</b><small>Kişiye özel 3D baskı</small></span></a>
   <nav id="menu" aria-label="Ana menü"><a href="#top" aria-current="page">Ana sayfa</a><a href="#urunler">Ürünler</a><a href="#ozel">Özel sipariş</a><a href="#atolye">Atölye</a><a href="#sss">SSS</a><a href="#iletisim">İletişim</a><a class="btn sm" href="<?= h($waMsg) ?>" rel="noopener"><?= ic('chat') ?>WhatsApp'tan yaz</a></nav>
+  <button class="theme-btn" type="button" onclick="temaDegis()" aria-label="Açık ya da koyu temaya geç" title="Açık / koyu tema"><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
   <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Menüyü aç"><span></span><span></span><span></span></button>
 </div></header>
 

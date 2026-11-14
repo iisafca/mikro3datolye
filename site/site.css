@@ -395,29 +395,67 @@ footer>.wrap>.copy:only-of-type{border-top:1px solid var(--rule);padding-top:18p
   .pic img,.cat-tile img{transition:none}
 }
 
-/* Aydınlık tema: tarayıcı/cihaz açık temadaysa kendiliğinden devreye girer */
+/* Tema düğmesi (üst çubukta) */
+.top nav{margin-left:auto}
+.theme-btn{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:8px;border:0;background:var(--s-high);color:var(--cream);cursor:pointer;box-shadow:3px 3px 0 var(--s-deep);transition:transform .15s,box-shadow .15s}
+.theme-btn:hover{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--s-deep)}
+.theme-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.theme-btn .i-moon{display:none}
+.top.open .theme-btn{margin-left:auto}
+
+/* Aydınlık tema: cihaz açık temadaysa kendiliğinden, ya da ziyaretçi düğmeyle seçerse devreye girer.
+   Aşağıdaki iki blok aynıdır: ilki otomatik seçim, ikincisi düğmeyle seçim içindir. */
 @media (prefers-color-scheme:light){
-  :root{
-    color-scheme:light;
-    --bg:#fbf6ea; --s-low:#f5edda; --s:#fffdf8; --s-high:#efe5cf; --s-top:#e7dcc3; --s-bright:#f8f0df; --s-deep:#1b1931;
-    --text:#1b1931; --mut:#565170; --cream:#1b1931; --sky:#00677a;
-    --sun-t:#8f5600; --pink-t:#a80f47; --cyan-t:#00677a;
-    --line:rgba(27,25,49,.16); --coral:#a80f47; --rule:rgba(27,25,49,.16); --rule-hi:rgba(27,25,49,.3);
-  }
-  /* Bu bölümler aydınlık temada da koyu kalır */
-  footer,.strip,.consent,.faq details[open]{
-    --bg:#121028; --s-low:#1b1931; --s:#1f1d35; --s-high:#292740; --s-top:#34324b; --s-deep:#0d0b22;
-    --text:#e4dfff; --mut:#c9bfd9; --cream:#ffe7ba; --sky:#c2f2ff;
-    --sun-t:#ffc531; --pink-t:#ffb2bd; --cyan-t:#53dffc;
-    --line:rgba(228,223,255,.14); --rule:rgba(211,197,173,.18); --rule-hi:rgba(211,197,173,.3);
-    --hard:4px 4px 0 #0d0b22;
-    color:var(--text);
-  }
-  .top{box-shadow:0 2px 0 rgba(27,25,49,.1),0 6px 18px rgba(27,25,49,.08)}
-  .top.open nav{box-shadow:0 16px 30px rgba(27,25,49,.18)}
-  .mark{background-color:#1b1931;border-radius:8px}
-  .hero::before{background-image:radial-gradient(rgba(27,25,49,.1) 1px,transparent 1px)}
-  .hero h1 .hl{background:var(--sun);color:var(--on-sun)}
-  .btn.light,.b-cream{background:#ffe7ba}
-  .card h3 a:hover,.more:hover{color:var(--sun-t)}
+:root:not([data-theme=dark]){
+  color-scheme:light;
+  --bg:#fbf6ea; --s-low:#f5edda; --s:#fffdf8; --s-high:#efe5cf; --s-top:#e7dcc3; --s-bright:#f8f0df; --s-deep:#1b1931;
+  --text:#1b1931; --mut:#565170; --cream:#1b1931; --sky:#00677a;
+  --sun-t:#8f5600; --pink-t:#a80f47; --cyan-t:#00677a;
+  --line:rgba(27,25,49,.16); --coral:#a80f47; --rule:rgba(27,25,49,.16); --rule-hi:rgba(27,25,49,.3);
+  --hard:4px 4px 0 #1b1931;
 }
+/* Bu bölümler aydınlık temada da koyu kalır */
+:root:not([data-theme=dark]) footer,:root:not([data-theme=dark]) .strip,:root:not([data-theme=dark]) .consent,:root:not([data-theme=dark]) .faq details[open]{
+  --bg:#121028; --s-low:#1b1931; --s:#1f1d35; --s-high:#292740; --s-top:#34324b; --s-deep:#0d0b22;
+  --text:#e4dfff; --mut:#c9bfd9; --cream:#ffe7ba; --sky:#c2f2ff;
+  --sun-t:#ffc531; --pink-t:#ffb2bd; --cyan-t:#53dffc;
+  --line:rgba(228,223,255,.14); --rule:rgba(211,197,173,.18); --rule-hi:rgba(211,197,173,.3);
+  --hard:4px 4px 0 #0d0b22;
+  color:var(--text);
+}
+:root:not([data-theme=dark]) .top{box-shadow:0 2px 0 rgba(27,25,49,.1),0 6px 18px rgba(27,25,49,.08)}
+:root:not([data-theme=dark]) .top.open nav{box-shadow:0 16px 30px rgba(27,25,49,.18)}
+:root:not([data-theme=dark]) .mark{background-color:#1b1931;border-radius:8px}
+:root:not([data-theme=dark]) .hero::before{background-image:radial-gradient(rgba(27,25,49,.1) 1px,transparent 1px)}
+:root:not([data-theme=dark]) .hero h1 .hl{background:var(--sun);color:var(--on-sun)}
+:root:not([data-theme=dark]) .btn.light,:root:not([data-theme=dark]) .b-cream{background:#ffe7ba}
+:root:not([data-theme=dark]) .card h3 a:hover,:root:not([data-theme=dark]) .more:hover{color:var(--sun-t)}
+:root:not([data-theme=dark]) .theme-btn .i-sun{display:none}
+:root:not([data-theme=dark]) .theme-btn .i-moon{display:block}
+}
+:root[data-theme=light]{
+  color-scheme:light;
+  --bg:#fbf6ea; --s-low:#f5edda; --s:#fffdf8; --s-high:#efe5cf; --s-top:#e7dcc3; --s-bright:#f8f0df; --s-deep:#1b1931;
+  --text:#1b1931; --mut:#565170; --cream:#1b1931; --sky:#00677a;
+  --sun-t:#8f5600; --pink-t:#a80f47; --cyan-t:#00677a;
+  --line:rgba(27,25,49,.16); --coral:#a80f47; --rule:rgba(27,25,49,.16); --rule-hi:rgba(27,25,49,.3);
+  --hard:4px 4px 0 #1b1931;
+}
+/* Bu bölümler aydınlık temada da koyu kalır */
+:root[data-theme=light] footer,:root[data-theme=light] .strip,:root[data-theme=light] .consent,:root[data-theme=light] .faq details[open]{
+  --bg:#121028; --s-low:#1b1931; --s:#1f1d35; --s-high:#292740; --s-top:#34324b; --s-deep:#0d0b22;
+  --text:#e4dfff; --mut:#c9bfd9; --cream:#ffe7ba; --sky:#c2f2ff;
+  --sun-t:#ffc531; --pink-t:#ffb2bd; --cyan-t:#53dffc;
+  --line:rgba(228,223,255,.14); --rule:rgba(211,197,173,.18); --rule-hi:rgba(211,197,173,.3);
+  --hard:4px 4px 0 #0d0b22;
+  color:var(--text);
+}
+:root[data-theme=light] .top{box-shadow:0 2px 0 rgba(27,25,49,.1),0 6px 18px rgba(27,25,49,.08)}
+:root[data-theme=light] .top.open nav{box-shadow:0 16px 30px rgba(27,25,49,.18)}
+:root[data-theme=light] .mark{background-color:#1b1931;border-radius:8px}
+:root[data-theme=light] .hero::before{background-image:radial-gradient(rgba(27,25,49,.1) 1px,transparent 1px)}
+:root[data-theme=light] .hero h1 .hl{background:var(--sun);color:var(--on-sun)}
+:root[data-theme=light] .btn.light,:root[data-theme=light] .b-cream{background:#ffe7ba}
+:root[data-theme=light] .card h3 a:hover,:root[data-theme=light] .more:hover{color:var(--sun-t)}
+:root[data-theme=light] .theme-btn .i-sun{display:none}
+:root[data-theme=light] .theme-btn .i-moon{display:block}
