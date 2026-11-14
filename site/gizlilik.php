@@ -92,7 +92,6 @@ function loadAnalytics(){
   <div class="tbl"><table>
     <thead><tr><th>Ad</th><th>Sağlayıcı</th><th>Ne işe yarar</th><th>Süre</th><th>Tür</th></tr></thead>
     <tbody>
-      <tr><td><code>PHPSESSID</code></td><td>Bu site</td><td>Sitenin teknik olarak çalışması için oturum kimliği. Kişisel bilgi içermez.</td><td>Tarayıcı kapanınca silinir</td><td>Zorunlu</td></tr>
       <tr><td><code>m3d_cerez</code></td><td>Bu site (tarayıcı hafızası)</td><td>Çerez tercihinizi (kabul ya da ret) hatırlar.</td><td>Siz silene kadar</td><td>Zorunlu</td></tr>
       <tr><td><code>m3d_ig</code></td><td>Bu site (tarayıcı hafızası)</td><td>Instagram paylaşımlarını göstermeyi seçtiğinizi hatırlar.</td><td>Siz silene kadar</td><td>İşlevsel</td></tr>
       <tr><td><code>m3d_tema</code></td><td>Bu site (tarayıcı hafızası)</td><td>Tema düğmesiyle seçtiğiniz açık ya da koyu görünümü hatırlar. Düğmeyi kullanmazsanız oluşmaz.</td><td>Siz silene kadar</td><td>İşlevsel</td></tr>
