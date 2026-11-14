@@ -5,7 +5,7 @@ $ig    = 'https://www.instagram.com/mikro3datolye';
 $wa    = 'https://wa.me/905346668102';
 // Veri sorumlusu: şahıs işletmesiyse ad soyad, şirketse ticari unvan yazın.
 $sorumlu    = 'Mikro 3D Atölye';
-$guncelleme = '9 Kasım 2026';
+$guncelleme = '14 Kasım 2026';
 function e($s){ return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); }
 ?><!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <script>
@@ -95,6 +95,7 @@ function loadAnalytics(){
       <tr><td><code>PHPSESSID</code></td><td>Bu site</td><td>Sitenin teknik olarak çalışması için oturum kimliği. Kişisel bilgi içermez.</td><td>Tarayıcı kapanınca silinir</td><td>Zorunlu</td></tr>
       <tr><td><code>m3d_cerez</code></td><td>Bu site (tarayıcı hafızası)</td><td>Çerez tercihinizi (kabul ya da ret) hatırlar.</td><td>Siz silene kadar</td><td>Zorunlu</td></tr>
       <tr><td><code>m3d_ig</code></td><td>Bu site (tarayıcı hafızası)</td><td>Instagram paylaşımlarını göstermeyi seçtiğinizi hatırlar.</td><td>Siz silene kadar</td><td>İşlevsel</td></tr>
+      <tr><td><code>m3d_tema</code></td><td>Bu site (tarayıcı hafızası)</td><td>Tema düğmesiyle seçtiğiniz açık ya da koyu görünümü hatırlar. Düğmeyi kullanmazsanız oluşmaz.</td><td>Siz silene kadar</td><td>İşlevsel</td></tr>
       <tr><td><code>_ga</code></td><td>Google Analytics</td><td>Ziyaretçileri birbirinden ayırt eder.</td><td>2 yıl</td><td>Analiz, yalnızca onayla</td></tr>
       <tr><td><code>_ga_DM8M8T5C9S</code></td><td>Google Analytics</td><td>Ziyaret oturumunu takip eder.</td><td>2 yıl</td><td>Analiz, yalnızca onayla</td></tr>
     </tbody>
