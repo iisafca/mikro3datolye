@@ -86,9 +86,11 @@ function loadAnalytics(){
 <script type="application/ld+json"><?= json_encode($ld,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP) ?></script>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/app-icon.php?s=180&amp;v=2">
-<meta name="theme-color" content="#1b1931">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#1b1931" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5edda" media="(prefers-color-scheme: light)">
 <link rel="preload" href="barlow-condensed-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="site.css?v=8"></head><body>
+<link rel="stylesheet" href="site.css?v=9"></head><body>
 
 <header class="top" id="top"><div class="wrap">
   <a class="logo" href="./" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"></span><span><b>Mikro 3D Atölye</b><small>Kişiye özel 3D baskı</small></span></a>
@@ -138,7 +140,7 @@ function loadAnalytics(){
 </div></section><?php endif; ?>
 
 <section class="shop torn-t torn-b" id="urunler"><div class="wrap">
-  <div class="sec-head split"><div><span class="eyebrow" style="color:var(--pink)">Ürünlerimiz</span><h2>Atölyeden çıkan favoriler</h2></div>
+  <div class="sec-head split"><div><span class="eyebrow" style="color:var(--pink-t)">Ürünlerimiz</span><h2>Atölyeden çıkan favoriler</h2></div>
   <?php if($cats): ?><nav class="pills" aria-label="Kategoriler"><a href="./#urunler"<?= $c===''?' aria-current="page"':'' ?>>Tümü</a><?php foreach($cats as $k): ?><a href="?k=<?= urlencode($k) ?>#urunler"<?= $c===$k?' aria-current="page"':'' ?>><?= h($k) ?></a><?php endforeach; ?></nav><?php endif; ?></div>
   <p class="stores">Ürünlerimizi <a href="<?= $shopier ?>" rel="noopener">Shopier</a> ve <a href="<?= $dolap ?>" rel="noopener">Dolap</a> mağazalarımızda da bulabilirsiniz.</p>
   <?php if(!$items): ?><div class="empty"><b>Ürünler yakında burada.</b><p>Şimdilik Shopier ve Dolap mağazalarımıza göz atabilir ya da aklınızdaki ürünü bize yazabilirsiniz.</p>
@@ -165,9 +167,9 @@ function loadAnalytics(){
 <section class="sec steps" id="ozel"><div class="wrap">
   <div class="sec-head center"><span class="eyebrow">Özel sipariş</span><h2>3 adımda ürününüz hazır</h2><p class="lead">Aklınızda bir ürün mü var? Süreç şöyle işliyor:</p></div>
   <ol>
-    <li><span class="n" style="color:var(--sun)" aria-hidden="true">1</span><span class="tag sun">Adım 01</span><h3>Fikrinizi anlatın</h3><p>WhatsApp'tan fotoğraf, ölçü ya da sadece fikrinizi yazın. Hazır 3D modeliniz olması gerekmiyor.</p></li>
-    <li><span class="n" style="color:var(--cyan)" aria-hidden="true">2</span><span class="tag cyan">Adım 02</span><h3>Birlikte netleştirelim</h3><p>Ürünün uygunluğuna, malzemeye ve rengine birlikte karar veririz. Fiyat ve ayrıntıları da burada konuşuruz.</p></li>
-    <li><span class="n" style="color:var(--pink)" aria-hidden="true">3</span><span class="tag berry">Adım 03</span><h3>Atölyede basılsın</h3><p>Onayınızdan sonra ürün atölyede basılır. Üretim genellikle 2-3 iş günü sürer; teslimat ayrıntılarını birlikte netleştiririz.</p></li>
+    <li><span class="n" style="color:var(--sun-t)" aria-hidden="true">1</span><span class="tag sun">Adım 01</span><h3>Fikrinizi anlatın</h3><p>WhatsApp'tan fotoğraf, ölçü ya da sadece fikrinizi yazın. Hazır 3D modeliniz olması gerekmiyor.</p></li>
+    <li><span class="n" style="color:var(--cyan-t)" aria-hidden="true">2</span><span class="tag cyan">Adım 02</span><h3>Birlikte netleştirelim</h3><p>Ürünün uygunluğuna, malzemeye ve rengine birlikte karar veririz. Fiyat ve ayrıntıları da burada konuşuruz.</p></li>
+    <li><span class="n" style="color:var(--pink-t)" aria-hidden="true">3</span><span class="tag berry">Adım 03</span><h3>Atölyede basılsın</h3><p>Onayınızdan sonra ürün atölyede basılır. Üretim genellikle 2-3 iş günü sürer; teslimat ayrıntılarını birlikte netleştiririz.</p></li>
   </ol>
   <div class="strip"><div><?= ic('chat') ?><div><h3>Fiyat bilgisi alın</h3><p>Fikrinizi, fotoğrafınızı ya da ölçünüzü gönderin; fiyat ve ayrıntıları size iletelim.</p></div></div><a class="btn" href="<?= h($waMsg) ?>" rel="noopener"><?= ic('chat') ?>WhatsApp'tan yaz</a></div>
 </div></section>

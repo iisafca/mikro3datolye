@@ -23,10 +23,12 @@ function loadAnalytics(){
 <title>Gizlilik ve Çerez Politikası | Mikro 3D Atölye</title>
 <meta name="description" content="Mikro 3D Atölye web sitesinde hangi kişisel verilerin ve çerezlerin hangi amaçla kullanıldığı, KVKK kapsamındaki haklarınız ve tercihlerinizi nasıl değiştirebileceğiniz.">
 <link rel="canonical" href="https://mikro3datolye.com.tr/gizlilik.php">
-<meta name="theme-color" content="#1b1931">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#1b1931" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5edda" media="(prefers-color-scheme: light)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/app-icon.php?s=180&amp;v=2">
-<link rel="stylesheet" href="site.css?v=8">
+<link rel="stylesheet" href="site.css?v=9">
 <style>
 .legal{background:var(--paper);padding:56px 0 80px}
 .legal .wrap{max-width:820px}

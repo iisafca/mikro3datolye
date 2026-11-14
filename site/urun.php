@@ -47,11 +47,13 @@ function loadAnalytics(){
 <script type="application/ld+json"><?= json_encode($ld,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP) ?></script>
 <script type="application/ld+json"><?= json_encode($ldCrumb,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_HEX_TAG|JSON_HEX_AMP) ?></script>
 <?php else: ?><meta name="robots" content="noindex"><?php endif; ?>
-<meta name="theme-color" content="#1b1931">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#1b1931" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5edda" media="(prefers-color-scheme: light)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/app-icon.php?s=180&amp;v=2">
 <link rel="preload" href="/barlow-condensed-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/site.css?v=8"></head><body>
+<link rel="stylesheet" href="/site.css?v=9"></head><body>
 
 <header class="top"><div class="wrap">
   <a class="logo" href="/" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"></span><span><b>Mikro 3D Atölye</b><small>Kişiye özel 3D baskı</small></span></a>
