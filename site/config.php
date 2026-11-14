@@ -1,5 +1,12 @@
 <?php
-session_start();
+// Oturum yalnızca panelde açılır (admin.php çağırır); site ziyaretçilerine çerez verilmez.
+function panel_session(){
+  if(session_status()!==PHP_SESSION_NONE) return;
+  session_name('m3d_s');
+  session_set_cookie_params(['lifetime'=>0,'path'=>'/','secure'=>true,'httponly'=>true,'samesite'=>'Lax']);
+  ini_set('session.use_strict_mode','1');
+  session_start();
+}
 $env = @parse_ini_file(dirname(__DIR__) . '/mikro3datolye.env', false, INI_SCANNER_RAW) ?: [];
 try {
   $db = new PDO("mysql:host={$env['DB_HOST']};dbname={$env['DB_NAME']};charset=utf8mb4", $env['DB_USER'], $env['DB_PASS'],

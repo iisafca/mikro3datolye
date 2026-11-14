@@ -1,4 +1,5 @@
 <?php require 'config.php'; require 'urun-ortak.php'; require 'panel-ek.php';
+panel_session();
 /* Mikro 3D Atölye yönetim paneli: stok, baskılar, satışlar, ürünler. */
 date_default_timezone_set('Europe/Istanbul');
 header('X-Robots-Tag: noindex');
@@ -54,19 +55,30 @@ function saveImg($f){
   $k=min(1,1000/max($i[0],$i[1])); $d=imagescale($s,max(1,(int)($i[0]*$k)),max(1,(int)($i[1]*$k)));
   if(!is_dir(__DIR__.'/uploads'))mkdir(__DIR__.'/uploads',0755); $n=bin2hex(random_bytes(8)).'.webp'; imagewebp($d,__DIR__.'/uploads/'.$n,80); return $n;}
 /* Fotoğrafı linkten alır (örn. Shopier ürün fotoğrafı): sunucu indirir, saveImg ile küçültüp kaydeder. */
-function urlImg($url){
-  $url=trim((string)$url); if($url==='') return null;
-  $u=parse_url($url); if(($u['scheme']??'')!=='https'||empty($u['host'])) return null;
+/* Adres https ise ve iç ağa gitmiyorsa [host, port, ip] döner; değilse null. */
+function urlHost($url){
+  $u=parse_url((string)$url); if(!is_array($u)||($u['scheme']??'')!=='https'||empty($u['host'])) return null;
   $ips=gethostbynamel($u['host']); if(!$ips) return null;
   foreach($ips as $ip) if(!filter_var($ip,FILTER_VALIDATE_IP,FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)) return null;   // iç ağ adreslerine istek yapılmaz
-  $data=false; $max=10485760;
+  return [$u['host'],(int)($u['port']??443),$ips[0]];
+}
+function urlImg($url){
+  $url=trim((string)$url); if($url==='') return null;
+  if(!urlHost($url)) return null;
+  $data=false; $max=10485760; $cur=$url;
   if(function_exists('curl_init')){
-    $c=curl_init($url);
-    curl_setopt_array($c,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>true,CURLOPT_MAXREDIRS=>3,CURLOPT_TIMEOUT=>20,CURLOPT_MAXFILESIZE=>$max,CURLOPT_USERAGENT=>'Mozilla/5.0 (Mikro3D panel)']);
-    if(defined('CURLPROTO_HTTPS')){ curl_setopt($c,CURLOPT_PROTOCOLS,CURLPROTO_HTTPS); curl_setopt($c,CURLOPT_REDIR_PROTOCOLS,CURLPROTO_HTTPS); }
-    $data=curl_exec($c); if((int)curl_getinfo($c,CURLINFO_HTTP_CODE)!==200) $data=false;
+    for($hop=0;$hop<4;$hop++){   // yönlendirmeler elle izlenir; her adımda adres yeniden denetlenir
+      $hp=urlHost($cur); if(!$hp){ $data=false; break; }
+      $c=curl_init($cur);
+      curl_setopt_array($c,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_TIMEOUT=>20,CURLOPT_MAXFILESIZE=>$max,CURLOPT_USERAGENT=>'Mozilla/5.0 (Mikro3D panel)',CURLOPT_RESOLVE=>[$hp[0].':'.$hp[1].':'.$hp[2]]]);
+      if(defined('CURLPROTO_HTTPS')) curl_setopt($c,CURLOPT_PROTOCOLS,CURLPROTO_HTTPS);
+      $data=curl_exec($c); $code=(int)curl_getinfo($c,CURLINFO_HTTP_CODE); $nx=(string)curl_getinfo($c,CURLINFO_REDIRECT_URL); unset($c);
+      if($code>=300 && $code<400 && $nx!==''){ $cur=$nx; $data=false; continue; }
+      if($code!==200) $data=false;
+      break;
+    }
   } elseif(ini_get('allow_url_fopen')){
-    $data=@file_get_contents($url,false,stream_context_create(['http'=>['timeout'=>20,'user_agent'=>'Mozilla/5.0 (Mikro3D panel)']]),0,$max+1);
+    $data=@file_get_contents($url,false,stream_context_create(['http'=>['timeout'=>20,'follow_location'=>0,'user_agent'=>'Mozilla/5.0 (Mikro3D panel)']]),0,$max+1);
   }
   if(!is_string($data)||$data===''||strlen($data)>$max) return null;
   $tmp=tempnam(sys_get_temp_dir(),'m3d'); file_put_contents($tmp,$data);
