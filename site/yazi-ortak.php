@@ -42,11 +42,16 @@ function yaziHtml($metin){
   return $out;
 }
 
-// Bir ürüne bağlantı veren yayındaki yazılar (ürün sayfasının altında listelenir). Metinde /urun/12-... geçen yazılar bulunur.
+/* Bir ürüne bağlantı veren yayındaki yazılar (ürün sayfasının altında listelenir). Metinde /urun/12-... geçen yazılar bulunur.
+   Sıralama: ürüne en çok bağlantı veren yazı önce; eşitse daha az farklı ürüne bağlantı veren (konusu daha dar) yazı önce.
+   Böylece her ürüne bağlantı veren genel yazılar (ana rehber, fiyatlar) ürünün kendi yazısının önüne geçmez. */
 function urunYazilari($db,$id,$n=3){
   try{
-    $st=$db->prepare("SELECT * FROM posts WHERE published=1 AND body LIKE ? ORDER BY published_on DESC, id DESC LIMIT ".(int)$n);
-    $st->execute(['%/urun/'.(int)$id.'-%']); return $st->fetchAll();
+    $k='/urun/'.(int)$id.'-';
+    $st=$db->prepare("SELECT *, (LENGTH(body)-LENGTH(REPLACE(body,?,'')))/".strlen($k)." AS hit,
+        (LENGTH(body)-LENGTH(REPLACE(body,'/urun/','')))/6 AS hepsi
+      FROM posts WHERE published=1 AND body LIKE ? ORDER BY hit DESC, hepsi ASC, published_on DESC, id DESC LIMIT ".(int)$n);
+    $st->execute([$k,'%'.$k.'%']); return $st->fetchAll();
   }catch(Throwable $e){ return []; }
 }
 // En yeni yayındaki yazılar (ana sayfadaki Rehber bölümü)
