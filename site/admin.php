@@ -105,6 +105,9 @@ function migrate($db){
   $cols=$db->query("SHOW COLUMNS FROM materials")->fetchAll(PDO::FETCH_COLUMN);
   foreach(['pack_price'=>"DECIMAL(10,2) NOT NULL DEFAULT 0",'pack_size'=>"DECIMAL(12,2) NOT NULL DEFAULT 1000",'hex'=>"VARCHAR(7) NULL"] as $c=>$def)
     if(!in_array($c,$cols,true)) $db->exec("ALTER TABLE materials ADD COLUMN $c $def");
+  // Ürünlere isteğe bağlı Google başlığı (ürün sayfasının <title> etiketi; boşsa ürün adı kullanılır)
+  if(!in_array('seo_title',$db->query("SHOW COLUMNS FROM products")->fetchAll(PDO::FETCH_COLUMN),true))
+    $db->exec("ALTER TABLE products ADD COLUMN seo_title VARCHAR(70) NULL");
   // Satışlara sipariş durumu. Notunda "Hazırlanıyor" yazan eski kayıtlar bu alana taşınır.
   if(!in_array('status',$db->query("SHOW COLUMNS FROM sales")->fetchAll(PDO::FETCH_COLUMN),true)){
     $db->exec("ALTER TABLE sales ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'teslim'");
@@ -174,7 +177,7 @@ if($ok && $_SERVER['REQUEST_METHOD']==='POST' && !isset($_POST['login'])){
     $img=saveImg($_FILES['image']??null) ?? urlImg($P('image_url'));
     if($img){ $r=$db->prepare("SELECT image FROM products WHERE id=?");$r->execute([$id]);$old=$r->fetchColumn(); if($old)@unlink(__DIR__.'/uploads/'.basename($old));
       $db->prepare("UPDATE products SET image=? WHERE id=?")->execute([$img,$id]); }
-    $db->prepare("UPDATE products SET name=?,category=?,price=?,description=?,shopier_url=? WHERE id=?")->execute([$P('name'),$P('category')?:'Genel',num($P('price')),$P('description'),$u,$id]);
+    $db->prepare("UPDATE products SET name=?,category=?,price=?,description=?,shopier_url=?,seo_title=? WHERE id=?")->execute([$P('name'),$P('category')?:'Genel',num($P('price')),$P('description'),$u,mb_substr($P('seo_title'),0,70)?:null,$id]);
     back('Ürün güncellendi.'.((!empty($_FILES['image']['name'])||$P('image_url')!=='')&&!$img?' Fotoğraf alınamadı: dosya ya da link JPG, PNG veya WEBP bir fotoğraf olmalı.':'')); }
   if($a==='ptog'){ $db->prepare("UPDATE products SET active=1-active WHERE id=?")->execute([$id]); back(); }
   if($a==='pdel'){ $r=$db->prepare("SELECT image FROM products WHERE id=?");$r->execute([$id]);$im=$r->fetchColumn(); if($im)@unlink(__DIR__.'/uploads/'.basename($im)); $db->prepare("DELETE FROM products WHERE id=?")->execute([$id]); back('Ürün silindi.'); }
@@ -396,6 +399,7 @@ $C=$ok?'<input type="hidden" name="csrf" value="'.h($_SESSION['csrf']).'">':'';
 <td class="act"><details class="ed"><summary>Düzenle</summary><form method="post" enctype="multipart/form-data" class="row"><?=$C?><input type="hidden" name="a" value="pedit"><input type="hidden" name="id" value="<?=$p['id']?>">
 <label class="lbl">Ad<input name="name" value="<?=h($p['name'])?>" required></label><label class="lbl">Kategori<input name="category" value="<?=h($p['category'])?>"></label>
 <label class="lbl">Fiyat (₺)<input name="price" inputmode="decimal" value="<?=h($p['price']+0)?>"></label><label class="lbl full">Shopier ürün linki<input name="shopier_url" value="<?=h($p['shopier_url'])?>" placeholder="https://..."></label>
+<label class="lbl full">Google başlığı (isteğe bağlı, ~50 karakter; boşsa ürün adı kullanılır)<input name="seo_title" maxlength="70" value="<?=h($p['seo_title']??'')?>" placeholder="örn. Ledli İsimlik – İsme Özel Işıklı İsimlik"></label>
 <label class="lbl full">Açıklama<textarea name="description" rows="4"><?=h($p['description'])?></textarea></label>
 <label class="lbl full">Yeni fotoğraf (değiştirmek isterseniz)<input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
 <label class="lbl full">ya da fotoğraf linki<input name="image_url" placeholder="https://... (örn. Shopier'deki ürün fotoğrafı)"></label>

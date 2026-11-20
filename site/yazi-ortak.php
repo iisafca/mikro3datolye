@@ -42,6 +42,18 @@ function yaziHtml($metin){
   return $out;
 }
 
+// Bir ürüne bağlantı veren yayındaki yazılar (ürün sayfasının altında listelenir). Metinde /urun/12-... geçen yazılar bulunur.
+function urunYazilari($db,$id,$n=3){
+  try{
+    $st=$db->prepare("SELECT * FROM posts WHERE published=1 AND body LIKE ? ORDER BY published_on DESC, id DESC LIMIT ".(int)$n);
+    $st->execute(['%/urun/'.(int)$id.'-%']); return $st->fetchAll();
+  }catch(Throwable $e){ return []; }
+}
+// En yeni yayındaki yazılar (ana sayfadaki Rehber bölümü)
+function sonYazilar($db,$n=3){
+  try{ return $db->query("SELECT * FROM posts WHERE published=1 ORDER BY published_on DESC, id DESC LIMIT ".(int)$n)->fetchAll(); }catch(Throwable $e){ return []; }
+}
+
 // Okuma süresi (dakika), dakikada ~200 kelime
 function yaziSure($metin){ return max(1,(int)round(count(preg_split('/\s+/u',trim(strip_tags((string)$metin)),-1,PREG_SPLIT_NO_EMPTY))/200)); }
 

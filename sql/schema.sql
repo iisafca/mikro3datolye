@@ -4,7 +4,8 @@
 CREATE TABLE IF NOT EXISTS products(
  id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(150) NOT NULL, category VARCHAR(80) NOT NULL DEFAULT 'Genel',
  price DECIMAL(10,2) NOT NULL DEFAULT 0, description TEXT, image VARCHAR(80), shopier_url VARCHAR(300),
- active TINYINT(1) NOT NULL DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) CHARSET=utf8mb4;
+ active TINYINT(1) NOT NULL DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ seo_title VARCHAR(70) NULL) CHARSET=utf8mb4;   -- seo_title: isteğe bağlı Google başlığı (boşsa ürün adı)
 
 -- Stok: filament ve diğer malzemeler. Birim maliyet = pack_price / pack_size (örn. 650 ₺ / 1000 g).
 CREATE TABLE IF NOT EXISTS materials(

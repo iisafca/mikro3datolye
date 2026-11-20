@@ -176,6 +176,11 @@ function loadAnalytics(){
   <div class="strip"><div><?= ic('chat') ?><div><h3>Fiyat bilgisi alın</h3><p>Fikrinizi, fotoğrafınızı ya da ölçünüzü gönderin; fiyat ve ayrıntıları size iletelim.</p></div></div><a class="btn" href="<?= h($waMsg) ?>" rel="noopener"><?= ic('chat') ?>WhatsApp'tan yaz</a></div>
 </div></section>
 
+<?php $sonY=sonYazilar($db); if($sonY): ?><section class="sec rehber-sec" id="rehber"><div class="wrap">
+  <div class="sec-head split"><div><span class="eyebrow">Rehber</span><h2>Atölyeden notlar</h2></div><a class="btn dark" href="/rehber">Tüm yazılar <?= ic('ne') ?></a></div>
+  <div class="grid"><?php foreach($sonY as $x) echo yaziKart($x); ?></div>
+</div></section><?php endif; ?>
+
 <section class="gallery torn-t torn-b" id="galeri"><div class="wrap">
   <div class="sec-head center"><span class="eyebrow">Atölyeden</span><h2>Baskıdan sonra</h2><p class="lead">Atölyeden çıkan ürünlerden kareler.</p></div>
   <?php if($pics): ?><div class="gal"><?php foreach(array_slice($pics,0,3) as $p) echo pola($p,'',''); ?></div><?php endif; ?>

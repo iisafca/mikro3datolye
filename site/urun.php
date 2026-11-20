@@ -9,7 +9,9 @@ if($p){
   // Eski ya da yanlış yazılmış adresleri tek, kalıcı adrese yönlendirir (Google aynı ürünü iki kez saymasın)
   if(parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH)!==$url){ header('Location: '.$url,true,301); exit; }
   $r=$db->prepare("SELECT * FROM products WHERE active=1 AND id<>? ORDER BY (category=?) DESC, id DESC LIMIT 4"); $r->execute([$p['id'],$p['category']]); $more=$r->fetchAll();
-  $title=$p['name'].' | Mikro 3D Atölye';
+  $yazilar=urunYazilari($db,$p['id']);
+  // Google başlığı panelde girildiyse o kullanılır (örn. "Ledli İsimlik – İsme Özel Işıklı İsimlik")
+  $title=(trim((string)($p['seo_title']??''))!=='' ? trim($p['seo_title']) : $p['name']).' | Mikro 3D Atölye';
   $desc=$p['description'] ? kisalt($p['description'],155) : $p['name'].' · '.tl($p['price']).'. Mikro 3D Atölye\'de 3D baskıyla üretilir; renk ve kişiselleştirme için bize yazın.';
   $img=$p['image'] ? SITE.'/uploads/'.$p['image'] : '';
   $ld=['@context'=>'https://schema.org','@type'=>'Product','name'=>$p['name'],'description'=>$p['description']?:$desc,'category'=>$p['category'],
@@ -85,6 +87,7 @@ function loadAnalytics(){
       </ul>
     </div>
   </div>
+  <?php if($yazilar): ?><section class="pd-more" aria-labelledby="ilgili"><h2 id="ilgili">Bu ürünle ilgili yazılar</h2><div class="grid"><?php foreach($yazilar as $x) echo yaziKart($x); ?></div></section><?php endif; ?>
   <?php if($more): ?><section class="pd-more" aria-labelledby="benzer"><h2 id="benzer">Diğer ürünler</h2><div class="grid"><?php foreach($more as $m) echo urunKart($m); ?></div></section><?php endif; ?>
 <?php else: ?>
   <div class="empty"><b>Bu ürün bulunamadı.</b><p>Ürün satıştan kaldırılmış ya da adres yanlış yazılmış olabilir.</p>
