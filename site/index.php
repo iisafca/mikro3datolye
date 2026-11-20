@@ -1,4 +1,4 @@
-<?php require 'config.php'; require 'urun-ortak.php';
+<?php require 'config.php'; require 'urun-ortak.php'; require 'yazi-ortak.php';
 /* Ana sayfa. Tasarım: Google Stitch taslağından uyarlandı; ürünler, kategoriler ve fotoğraflar panelden gelir. */
 $wa     = WA;
 $waMsg  = $wa . '?text=' . rawurlencode('Merhaba, kişiye özel bir ürün hakkında bilgi almak istiyorum.');
@@ -95,7 +95,7 @@ function loadAnalytics(){
 
 <header class="top" id="top"><div class="wrap">
   <a class="logo" href="./" aria-label="Mikro 3D Atölye ana sayfa"><span class="mark" aria-hidden="true"></span><span><b>Mikro 3D Atölye</b><small>Kişiye özel 3D baskı</small></span></a>
-  <nav id="menu" aria-label="Ana menü"><a href="#top" aria-current="page">Ana sayfa</a><a href="#urunler">Ürünler</a><a href="#ozel">Özel sipariş</a><a href="#atolye">Atölye</a><a href="#sss">SSS</a><a href="#iletisim">İletişim</a><a class="btn sm" href="<?= h($waMsg) ?>" rel="noopener"><?= ic('chat') ?>WhatsApp'tan yaz</a></nav>
+  <nav id="menu" aria-label="Ana menü"><a href="#top" aria-current="page">Ana sayfa</a><a href="#urunler">Ürünler</a><a href="#ozel">Özel sipariş</a><?php if(yaziSay($db)): ?><a href="/rehber">Rehber</a><?php endif; ?><a href="#atolye">Atölye</a><a href="#sss">SSS</a><a href="#iletisim">İletişim</a><a class="btn sm" href="<?= h($waMsg) ?>" rel="noopener"><?= ic('chat') ?>WhatsApp'tan yaz</a></nav>
   <button class="theme-btn" type="button" onclick="temaDegis()" aria-label="Açık ya da koyu temaya geç" title="Açık / koyu tema"><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
   <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Menüyü aç"><span></span><span></span><span></span></button>
 </div></header>

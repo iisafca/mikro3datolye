@@ -293,7 +293,7 @@ function ek_post($db,$a,$id,$P,$watt,$kwh){
 
 /* ---------- Ekran parçaları ---------- */
 function ek_nav($t){
-  $o=''; foreach(['o'=>'Özet','m'=>'Stok','r'=>'Şablonlar','b'=>'Baskılar','s'=>'Satışlar','g'=>'Giderler','p'=>'Site ürünleri','v'=>'Reels'] as $k=>$v) $o.='<a href="?t='.$k.'"'.($t===$k?' class="on"':'').'>'.$v.'</a>';
+  $o=''; foreach(['o'=>'Özet','m'=>'Stok','r'=>'Şablonlar','b'=>'Baskılar','s'=>'Satışlar','g'=>'Giderler','p'=>'Site ürünleri','y'=>'Yazılar','v'=>'Reels'] as $k=>$v) $o.='<a href="?t='.$k.'"'.($t===$k?' class="on"':'').'>'.$v.'</a>';
   return $o;
 }
 function ek_page($t,$db,$C,$S,$watt,$kwh,$mats,$today){
@@ -301,6 +301,7 @@ function ek_page($t,$db,$C,$S,$watt,$kwh,$mats,$today){
   if($t==='r'){ ek_sablon($db,$C,$watt,$kwh,$mats,$today); return true; }
   if($t==='v'){ ek_reels($db); return true; }
   if($t==='g'){ ek_gider($db,$C,$today); return true; }
+  if($t==='y'){ yazi_page($db,$C); return true; }
   return false;
 }
 // Satış formlarına eklenen sipariş takibi alanları

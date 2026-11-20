@@ -313,6 +313,27 @@ footer>.wrap>.copy:only-of-type{border-top:1px solid var(--rule);padding-top:18p
 .pd-more{margin-top:84px}
 .pd-more h2{font-size:clamp(2.2rem,4vw,3rem);text-transform:uppercase;margin-bottom:26px}
 
+/* Rehber yazıları (rehber.php) */
+.post-head{display:flex;flex-direction:column;align-items:flex-start;gap:14px;max-width:760px;margin-bottom:34px}
+.post-head .cat{font-size:1rem}
+.post-head h1{font-size:clamp(2.4rem,5vw,3.8rem);text-transform:uppercase;line-height:.98}
+.post-head .lead{font-size:1.15rem;color:var(--mut);max-width:62ch}
+.post-head .meta{font-size:.9rem;color:var(--mut)}
+.post{max-width:760px}
+.post-pic{margin:0 0 34px;background:#fff;padding:10px;border-radius:12px;box-shadow:8px 8px 0 var(--s-deep)}
+.post-pic img{display:block;width:100%;border-radius:6px}
+.post-body{font-size:1.08rem;line-height:1.75}
+.post-body>*+*{margin-top:1.1em}
+.post-body h2{font-size:clamp(1.8rem,3.4vw,2.4rem);text-transform:uppercase;margin-top:1.8em}
+.post-body h3{font-size:1.5rem;margin-top:1.5em}
+.post-body ul,.post-body ol{padding-left:1.4em}
+.post-body li+li{margin-top:.4em}
+.post-body a{color:var(--sun-t);text-underline-offset:3px}
+.post-cta{margin-top:48px;padding:26px;border-radius:12px;background:var(--s);box-shadow:var(--hard);display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.post-cta b{font:800 1.6rem/1.1 var(--f-disp);text-transform:uppercase}
+.post-cta p{color:var(--mut)}
+.draft-note{display:inline-block;margin-bottom:18px;padding:8px 14px;border-radius:8px;background:var(--sun);color:var(--on-sun);font-weight:700}
+
 /* Gizlilik sayfası */
 .legal{color:var(--text)}
 .legal h1,.legal h2{text-transform:uppercase}

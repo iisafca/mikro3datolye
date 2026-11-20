@@ -1,4 +1,4 @@
-<?php require 'config.php'; require 'urun-ortak.php'; require 'panel-ek.php';
+<?php require 'config.php'; require 'urun-ortak.php'; require 'panel-ek.php'; require 'panel-yazi.php';
 panel_session();
 /* Mikro 3D Atölye yönetim paneli: stok, baskılar, satışlar, ürünler. */
 date_default_timezone_set('Europe/Istanbul');
@@ -11,7 +11,7 @@ const CHANNELS=['Tanıdık','Shopier','Dolap','Instagram','WhatsApp','Elden','Di
 const SSTAT=['hazirlaniyor'=>'Hazırlanıyor','kargoda'=>'Kargoda','teslim'=>'Teslim edildi'];
 const AYLAR=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
 
-$t=$_GET['t']??'o'; if(!in_array($t,['o','m','r','b','s','g','p','v'],true)) $t='o';
+$t=$_GET['t']??'o'; if(!in_array($t,['o','m','r','b','s','g','p','y','v'],true)) $t='o';
 $ay=$_GET['ay']??date('Y-m'); if($ay!=='hepsi' && !preg_match('/^\d{4}-(0[1-9]|1[0-2])$/',$ay)) $ay=date('Y-m');
 
 /* "Bu cihazda açık kalsın": imzalı çerez. Şifre değişirse tüm cihazlardaki çerezler geçersiz olur. */
@@ -115,7 +115,7 @@ function sstat($v){ return array_key_exists($v,SSTAT) ? $v : 'teslim'; }
 
 $ok=!empty($_SESSION['ok']); $S=[];
 if($ok){ migrate($db); $S=$db->query("SELECT k,v FROM settings")->fetchAll(PDO::FETCH_KEY_PAIR); }
-if($ok){ ek_migrate($db,$S); if($_SERVER['REQUEST_METHOD']==='GET' && !isset($_GET['csv']) && !isset($_GET['yedek'])) ek_auto_backup($db,$S); }
+if($ok){ ek_migrate($db,$S); yazi_migrate($db,$S); if($_SERVER['REQUEST_METHOD']==='GET' && !isset($_GET['csv']) && !isset($_GET['yedek'])) ek_auto_backup($db,$S); }
 $watt=num($S['printer_watt']??0); $kwh=num($S['kwh_price']??0);
 
 /* ---------- Satışları Excel için CSV olarak indir ---------- */
@@ -162,6 +162,7 @@ if($ok && $_SERVER['REQUEST_METHOD']==='POST' && !isset($_POST['login'])){
   if(!hash_equals($_SESSION['csrf'],(string)($_POST['csrf']??''))) exit('Geçersiz istek.');
   $a=$_POST['a']??''; $id=(int)($_POST['id']??0); $P=fn($k)=>trim((string)($_POST[$k]??''));
   ek_post($db,$a,$id,$P,$watt,$kwh);
+  yazi_post($db,$a,$id,$P);
 
   // Ürünler
   if($a==='padd'){ $u=$P('shopier_url'); if($u!==''&&!preg_match('#^https://#',$u))$u='';

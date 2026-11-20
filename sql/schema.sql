@@ -35,3 +35,10 @@ CREATE TABLE IF NOT EXISTS sales(
  unit_price DECIMAL(10,2) NOT NULL DEFAULT 0, unit_cost DECIMAL(10,2) NOT NULL DEFAULT 0, fee DECIMAL(10,2) NOT NULL DEFAULT 0,
  shipping DECIMAL(10,2) NOT NULL DEFAULT 0, channel VARCHAR(30) NOT NULL DEFAULT 'Diğer', customer VARCHAR(120), notes TEXT,
  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX(sold_on), INDEX(print_id)) CHARSET=utf8mb4;
+
+-- Rehber yazıları (/rehber/...). Panelin "Yazılar" sekmesinden yönetilir. body: paneldeki kısa yazım biçimi (## başlık, - madde, **kalın**, [metin](link)).
+CREATE TABLE IF NOT EXISTS posts(
+ id INT AUTO_INCREMENT PRIMARY KEY, slug VARCHAR(80) NOT NULL, title VARCHAR(160) NOT NULL, description VARCHAR(300) NOT NULL DEFAULT '',
+ body MEDIUMTEXT, image VARCHAR(80) NULL, published TINYINT(1) NOT NULL DEFAULT 0, published_on DATE NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ UNIQUE KEY(slug), INDEX(published,published_on)) CHARSET=utf8mb4;
