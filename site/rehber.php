@@ -18,10 +18,27 @@ try{
   }
 }catch(Throwable $e){ $ys=[]; $y=null; }   // tablo henüz oluşmadıysa (panele hiç girilmediyse) boş gösterir
 
+// Sekme/Google başlığı: sitenin adı eklenince 60 karakteri aşıyorsa ek kaldırılır (Google uzun başlığın sonunu keser).
+function rehberBaslik($t){ $ek=' | Mikro 3D Atölye'; return mb_strlen($t.$ek,'UTF-8')<=60 ? $t.$ek : $t; }
+/* Paylaşım görseli (og:image). Yazının kapağı yoksa yazının bağlantı verdiği ilk ürünün fotoğrafı, o da yoksa en yeni ürün fotoğrafı.
+   Böylece WhatsApp/Instagram'da paylaşılınca önizleme resmi çıkar; kapak eklenince kendiliğinden o kullanılır. */
+function rehberGorsel($db,$y=null){
+  if($y && $y['image']) return SITE.'/uploads/'.$y['image'];
+  try{
+    if($y && preg_match_all('#/urun/(\d+)-#',(string)$y['body'],$m)){
+      $st=$db->prepare("SELECT image FROM products WHERE id=? AND active=1 AND image<>''");
+      foreach(array_unique($m[1]) as $id){ $st->execute([(int)$id]); if($i=$st->fetchColumn()) return SITE.'/uploads/'.$i; }
+    }
+    $i=$db->query("SELECT image FROM products WHERE active=1 AND image<>'' ORDER BY id DESC LIMIT 1")->fetchColumn();
+    return $i ? SITE.'/uploads/'.$i : '';
+  }catch(Throwable $e){ return ''; }
+}
+
 $ld=[]; $robots='';
 if($liste){
-  $title='Rehber: Kişiye Özel 3D Baskı Hediye Fikirleri | Mikro 3D Atölye';
-  $desc='3D baskı hediyeler, ledli isimlikler, malzemeler ve özel sipariş hakkında Bursa\'daki atölyemizden rehber yazıları.';
+  $title=rehberBaslik('Rehber: Kişiye Özel 3D Baskı Hediye Fikirleri');
+  $desc='3D baskı hediyeler, ledli isimlikler, malzemeler, fiyatlar ve özel sipariş hakkında Bursa\'daki atölyemizden pratik rehber yazıları.';
+  $img=rehberGorsel($db);
   $canon=SITE.'/rehber';
   if(!$ys) $robots='noindex';
   $ld[]=['@context'=>'https://schema.org','@type'=>'BreadcrumbList','itemListElement'=>[
@@ -29,10 +46,10 @@ if($liste){
 } elseif($y){
   $url=yaziUrl($y);
   if(!$onizle && parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH)!==$url){ header('Location: '.$url,true,301); exit; }   // tek, kalıcı adres
-  $title=$y['title'].' | Mikro 3D Atölye';
+  $title=rehberBaslik($y['title']);
   $desc=$y['description']!=='' ? $y['description'] : kisalt(strip_tags(yaziHtml($y['body'])),155);
   $canon=SITE.$url;
-  $img=$y['image'] ? SITE.'/uploads/'.$y['image'] : '';
+  $img=rehberGorsel($db,$y);
   $pubOn=$y['published_on'] ?: substr((string)$y['created_at'],0,10);
   if(!$y['published']) $robots='noindex';
   $art=['@context'=>'https://schema.org','@type'=>'BlogPosting','headline'=>$y['title'],'description'=>$desc,'inLanguage'=>'tr',
